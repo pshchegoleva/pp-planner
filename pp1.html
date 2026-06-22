@@ -37,6 +37,15 @@
   }
   header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
   header p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .sync-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .sync-status.online { background: #edf4f0; color: #3a5a4a; }
+  .sync-status.offline { background: #fdf3ee; color: #7a4a38; }
   .today-banner {
     background: var(--card);
     border: 1px solid var(--border);
@@ -135,7 +144,8 @@
   .grid { display: grid; gap: 10px; }
   .grid-2 { grid-template-columns: 1fr 1fr; }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 700px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
   .alert {
     padding: 10px 14px;
     border-radius: 8px;
@@ -266,6 +276,103 @@
   .days-left.soon { background: #fbeeed; color: #7a2e2b; }
   .days-left.mid { background: #fdf3ee; color: #7a4a38; }
   .days-left.ok { background: #edf4f0; color: #3a5a4a; }
+  .search-box {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-box input {
+    width: 100%;
+    padding-left: 36px;
+  }
+  .search-box::before {
+    content: '🔍';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+  }
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn.active {
+    background: var(--text);
+    color: var(--card);
+    border-color: var(--text);
+  }
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .progress-bar > div {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+  .goal-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .goal-title { font-weight: 500; margin-bottom: 6px; }
+  .goal-meta { font-size: 12px; color: var(--muted); }
+  .quick-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .quick-action {
+    padding: 8px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .quick-action:hover {
+    background: var(--bg);
+    border-color: var(--accent);
+  }
+  .energy-tracker {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .energy-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .energy-day:hover { transform: scale(1.05); }
+  .energy-day.high { background: #edf4f0; color: #3a5a4a; }
+  .energy-day.mid { background: #fdf3ee; color: #7a4a38; }
+  .energy-day.low { background: #fbeeed; color: #7a2e2b; }
 </style>
 </head>
 <body>
@@ -274,9 +381,17 @@
 <header>
   <h1>Планировщик</h1>
   <p>Задача → дедлайн → распределение по дням</p>
+  <div id="sync-status" class="sync-status offline">⏳ Проверка связи с сервером...</div>
 </header>
 
 <div class="today-banner" id="today-banner"></div>
+
+<div class="quick-actions">
+  <div class="quick-action" onclick="document.querySelector('[data-tab=tasks]').click(); $('t-title').focus();">➕ Новая задача</div>
+  <div class="quick-action" onclick="document.querySelector('[data-tab=brain]').click(); $('brain-text').focus();">🧠 Выгрузить мозг</div>
+  <div class="quick-action" onclick="document.querySelector('[data-tab=focus]').click(); pomoStart();">🎯 Начать фокус</div>
+  <div class="quick-action" onclick="sendTodayToTG();">📲 Отправить в TG</div>
+</div>
 
 <div class="tabs">
   <button class="tab active" data-tab="tasks">📋 Задачи</button>
@@ -286,7 +401,10 @@
   <button class="tab" data-tab="habits">✨ Привычки</button>
   <button class="tab" data-tab="focus">🎯 Фокус</button>
   <button class="tab" data-tab="routine">🍽 Режим</button>
+  <button class="tab" data-tab="goals">🎯 Цели</button>
+  <button class="tab" data-tab="energy">⚡ Энергия</button>
   <button class="tab" data-tab="finance">💰 Финансы</button>
+  <button class="tab" data-tab="stats">📊 Статистика</button>
   <button class="tab" data-tab="settings">⚙️ Настройки</button>
 </div>
 
@@ -317,6 +435,12 @@
   </div>
   <button onclick="addTask()">Добавить задачу</button>
   <div id="load-alerts"></div>
+
+  <div class="search-box">
+    <input id="task-search" placeholder="Поиск задач..." oninput="renderTasks()">
+  </div>
+
+  <div class="filter-row" id="task-filters"></div>
 
   <h3>📌 Сегодня</h3>
   <div id="today-tasks"></div>
@@ -455,6 +579,28 @@
   </div>
 </div>
 
+<!-- ЦЕЛИ -->
+<div class="panel" id="panel-goals">
+  <h2>🎯 Цели</h2>
+  <p style="color:var(--muted); margin-bottom:10px;">Установи цели на неделю/месяц и отслеживай прогресс.</p>
+  <div id="goals-list"></div>
+  <h3>➕ Новая цель</h3>
+  <div class="form-row">
+    <input id="g-title" placeholder="Например: Прочитать 3 книги" style="flex:2;">
+    <input id="g-target" type="number" placeholder="Цель (число)" style="width:120px;">
+    <input id="g-deadline" type="date" style="width:150px;">
+    <button onclick="addGoal()">+</button>
+  </div>
+</div>
+
+<!-- ЭНЕРГИЯ -->
+<div class="panel" id="panel-energy">
+  <h2>⚡ Трекер энергии</h2>
+  <p style="color:var(--muted); margin-bottom:10px;">Отмечай уровень энергии каждый день. Поможет понять лучшие часы для работы.</p>
+  <div class="energy-tracker" id="energy-grid"></div>
+  <div id="energy-stats" style="margin-top:14px;"></div>
+</div>
+
 <!-- ФИНАНСЫ -->
 <div class="panel" id="panel-finance">
   <h2>💰 Финансы</h2>
@@ -481,6 +627,33 @@
   <div id="fin-summary" style="margin-top:14px;"></div>
   <h3>📊 История</h3>
   <div id="fin-list"></div>
+</div>
+
+<!-- СТАТИСТИКА -->
+<div class="panel" id="panel-stats">
+  <h2>📊 Статистика продуктивности</h2>
+  <div class="grid grid-4">
+    <div class="stat-card">
+      <div class="num" id="stat-total">0</div>
+      <div class="lbl">Всего задач</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="stat-done">0</div>
+      <div class="lbl">Выполнено</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="stat-rate">0%</div>
+      <div class="lbl">Эффективность</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="stat-streak">0</div>
+      <div class="lbl">Дней подряд</div>
+    </div>
+  </div>
+  <h3>📈 По проектам</h3>
+  <div id="stats-projects"></div>
+  <h3>📅 По дням недели</h3>
+  <div id="stats-weekdays"></div>
 </div>
 
 <!-- НАСТРОЙКИ -->
@@ -518,12 +691,8 @@
 
   <h3>🖥 Python-сервер (24/7 уведомления)</h3>
   <div class="alert info">
-    Чтобы напоминания работали при <b>выключенном браузере</b>:<br>
-    1. Установи Python с python.org<br>
-    2. В терминале: <code>pip install flask apscheduler requests</code><br>
-    3. Положи рядом файл <b>server.py</b> (код ниже)<br>
-    4. Запусти: <code>python server.py</code><br>
-    Сервер будет слать уведомления по расписанию, даже если браузер закрыт.
+    Сервер работает на Railway: <b>https://pp-planner-production.up.railway.app/</b><br>
+    Уведомления приходят автоматически в 08:00, 09:00, 21:00.
   </div>
 
   <h3>🗄 Данные</h3>
@@ -538,10 +707,13 @@
 </div>
 
 <script>
+// ========== КОНФИГУРАЦИЯ СЕРВЕРА ==========
+const SERVER_URL = 'https://pp-planner-production.up.railway.app';
+
 // ========== ХРАНИЛИЩЕ ==========
 const DB = {
   load() {
-    const d = JSON.parse(localStorage.getItem('planner_v3') || '{}');
+    const d = JSON.parse(localStorage.getItem('planner_v4') || '{}');
     return {
       tasks: d.tasks || [],
       projects: d.projects || [
@@ -561,24 +733,25 @@ const DB = {
         {id:'r4', name:'Ужин', time:'20:00', dur:30, slot:'evening'}
       ],
       finance: d.finance || [],
+      goals: d.goals || [],
+      energy: d.energy || {},
       settings: d.settings || {
         wake:'08:00', sleep:'23:00', study:4, work:2, max:6, remind:30,
         tgToken:'', tgChat:''
       },
       pomo: d.pomo || { done:0, mins:0, date:'' },
       calMonth: d.calMonth ?? new Date().getMonth(),
-      calYear: d.calYear ?? new Date().getFullYear()
+      calYear: d.calYear ?? new Date().getFullYear(),
+      filters: d.filters || { project: 'all', priority: 'all' }
     };
   },
-  save(d) { localStorage.setItem('planner_v3', JSON.stringify(d)); }
+  save(d) { localStorage.setItem('planner_v4', JSON.stringify(d)); }
 };
 let state = DB.load();
 
-// ========== УТИЛИТЫ (ИСПРАВЛЕН БАГ С ДАТАМИ!) ==========
+// ========== УТИЛИТЫ ==========
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-
-// ВАЖНО: используем ЛОКАЛЬНОЕ время, а не UTC
 const fmtDate = d => {
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,'0');
@@ -662,7 +835,6 @@ function scheduleTasks() {
   const active = state.tasks.filter(t => !t.done);
   const todayDate = parseDate(today());
   active.forEach(t => {
-    // Сбрасываем расписание если дата старта изменилась или просрочено
     const startDate = parseDate(t.start || today());
     const effectiveStart = startDate > todayDate ? startDate : todayDate;
     const dl = parseDate(t.deadline);
@@ -746,22 +918,54 @@ function renderTask(t) {
 
 function renderTasks() {
   const td = today();
-  const todayTasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
-  const future = state.tasks.filter(t => !t.done && t.scheduledDate && t.scheduledDate > td).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate));
-  const done = state.tasks.filter(t => t.done).slice(-10).reverse();
+  const search = ($('task-search')?.value || '').toLowerCase();
+  
+  // Фильтры
+  let filtered = state.tasks;
+  if (search) {
+    filtered = filtered.filter(t => t.title.toLowerCase().includes(search));
+  }
+  if (state.filters.project !== 'all') {
+    filtered = filtered.filter(t => t.projectId === state.filters.project);
+  }
+  if (state.filters.priority !== 'all') {
+    filtered = filtered.filter(t => t.priority === state.filters.priority);
+  }
+
+  const todayTasks = filtered.filter(t => !t.done && t.scheduledDate === td);
+  const future = filtered.filter(t => !t.done && t.scheduledDate && t.scheduledDate > td).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate));
+  const done = filtered.filter(t => t.done).slice(-10).reverse();
 
   $('today-tasks').innerHTML = todayTasks.length ? todayTasks.map(renderTask).join('') : '<p style="color:var(--muted)">На сегодня ничего 🌿</p>';
   $('future-tasks').innerHTML = future.length ? future.map(renderTask).join('') : '<p style="color:var(--muted)">Пусто</p>';
   $('done-tasks').innerHTML = done.length ? done.map(renderTask).join('') : '<p style="color:var(--muted)">Пока нет</p>';
 
   let alerts = '';
-  state.tasks.filter(t=>!t.done).forEach(t => {
+  filtered.filter(t=>!t.done).forEach(t => {
     const daysLeft = daysBetween(td, t.deadline);
     if (daysLeft < 0) alerts += `<div class="alert err">🚨 Просрочено: <b>${t.title}</b> (${t.deadline})</div>`;
     else if (daysLeft === 0) alerts += `<div class="alert warn">⏰ Сдать сегодня: <b>${t.title}</b></div>`;
     else if (daysLeft === 1) alerts += `<div class="alert warn">⏰ Завтра сдать: <b>${t.title}</b></div>`;
   });
   $('load-alerts').innerHTML = alerts;
+
+  // Рендер фильтров
+  let filtersHTML = '<button class="filter-btn ' + (state.filters.project==='all'?'active':'') + '" onclick="setFilter(\'project\',\'all\')">Все проекты</button>';
+  state.projects.forEach(p => {
+    filtersHTML += `<button class="filter-btn ${state.filters.project===p.id?'active':''}" onclick="setFilter('project','${p.id}')">${p.emoji} ${p.name}</button>`;
+  });
+  filtersHTML += '<br>';
+  filtersHTML += `<button class="filter-btn ${state.filters.priority==='all'?'active':''}" onclick="setFilter('priority','all')">Все приоритеты</button>`;
+  filtersHTML += `<button class="filter-btn ${state.filters.priority==='high'?'active':''}" onclick="setFilter('priority','high')">🔥 Важно</button>`;
+  filtersHTML += `<button class="filter-btn ${state.filters.priority==='mid'?'active':''}" onclick="setFilter('priority','mid')">🟡 Средне</button>`;
+  filtersHTML += `<button class="filter-btn ${state.filters.priority==='low'?'active':''}" onclick="setFilter('priority','low')">🟢 Позже</button>`;
+  $('task-filters').innerHTML = filtersHTML;
+}
+
+function setFilter(type, value) {
+  state.filters[type] = value;
+  DB.save(state);
+  renderTasks();
 }
 
 // ========== МОЗГ ==========
@@ -994,6 +1198,89 @@ function renderRoutine() {
   });
 }
 
+// ========== ЦЕЛИ ==========
+function addGoal() {
+  const title = $('g-title').value.trim();
+  const target = parseFloat($('g-target').value);
+  const deadline = $('g-deadline').value;
+  if (!title || !target || !deadline) { alert('Заполни все поля'); return; }
+  state.goals.push({id: uid(), title, target, current: 0, deadline, created: today()});
+  $('g-title').value = ''; $('g-target').value = ''; $('g-deadline').value = '';
+  DB.save(state);
+  renderGoals();
+}
+function updateGoal(id, delta) {
+  const g = state.goals.find(x => x.id === id);
+  g.current = Math.max(0, Math.min(g.target, g.current + delta));
+  DB.save(state);
+  renderGoals();
+}
+function deleteGoal(id) {
+  state.goals = state.goals.filter(g => g.id !== id);
+  DB.save(state);
+  renderGoals();
+}
+function renderGoals() {
+  $('goals-list').innerHTML = state.goals.length ? state.goals.map(g => {
+    const pct = Math.round((g.current / g.target) * 100);
+    const daysLeft = daysBetween(today(), g.deadline);
+    return `
+      <div class="goal-card">
+        <div class="goal-title">${g.title}</div>
+        <div class="goal-meta">${g.current} / ${g.target} • Осталось ${daysLeft} дн.</div>
+        <div class="progress-bar"><div style="width:${pct}%"></div></div>
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <button class="ghost" onclick="updateGoal('${g.id}', -1)">-1</button>
+          <button class="ghost" onclick="updateGoal('${g.id}', 1)">+1</button>
+          <button class="danger" onclick="deleteGoal('${g.id}')">🗑</button>
+        </div>
+      </div>
+    `;
+  }).join('') : '<p style="color:var(--muted)">Нет целей</p>';
+}
+
+// ========== ЭНЕРГИЯ ==========
+function setEnergy(date, level) {
+  state.energy[date] = level;
+  DB.save(state);
+  renderEnergy();
+}
+function renderEnergy() {
+  const days = [];
+  for (let i=29; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(fmtDate(d));
+  }
+  let html = '';
+  days.forEach(d => {
+    const level = state.energy[d] || 0;
+    const cls = level === 3 ? 'high' : level === 2 ? 'mid' : level === 1 ? 'low' : '';
+    const label = level === 3 ? '⚡' : level === 2 ? '🔋' : level === 1 ? '🪫' : '';
+    html += `<div class="energy-day ${cls}" onclick="cycleEnergy('${d}')" title="${d}">
+      ${d.slice(8)}<br>${label}
+    </div>`;
+  });
+  $('energy-grid').innerHTML = html;
+
+  // Статистика
+  const levels = Object.values(state.energy);
+  const avg = levels.length ? (levels.reduce((s,l)=>s+l,0) / levels.length).toFixed(1) : 0;
+  const high = levels.filter(l => l === 3).length;
+  const low = levels.filter(l => l === 1).length;
+  $('energy-stats').innerHTML = `
+    <div class="grid grid-3">
+      <div class="stat-card"><div class="num">${avg}</div><div class="lbl">Средняя энергия</div></div>
+      <div class="stat-card"><div class="num">${high}</div><div class="lbl">Дней с высокой</div></div>
+      <div class="stat-card"><div class="num">${low}</div><div class="lbl">Дней с низкой</div></div>
+    </div>
+  `;
+}
+function cycleEnergy(date) {
+  const current = state.energy[date] || 0;
+  const next = (current % 3) + 1;
+  setEnergy(date, next);
+}
+
 // ========== ФИНАНСЫ ==========
 function addFinance(type) {
   const prefix = type === 'income' ? 'in' : 'ex';
@@ -1033,6 +1320,70 @@ function renderFinance() {
   `).join('') || '<p style="color:var(--muted)">Нет записей</p>';
 }
 
+// ========== СТАТИСТИКА ==========
+function renderStats() {
+  const total = state.tasks.length;
+  const done = state.tasks.filter(t => t.done).length;
+  const rate = total ? Math.round((done / total) * 100) : 0;
+  
+  // Streak
+  let streak = 0;
+  const todayDate = new Date();
+  for (let i=0; i<365; i++) {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() - i);
+    const ds = fmtDate(d);
+    const dayTasks = state.tasks.filter(t => t.doneAt === ds);
+    if (dayTasks.length > 0) streak++;
+    else if (i > 0) break;
+  }
+
+  $('stat-total').textContent = total;
+  $('stat-done').textContent = done;
+  $('stat-rate').textContent = rate + '%';
+  $('stat-streak').textContent = streak;
+
+  // По проектам
+  let projHTML = '';
+  state.projects.forEach(p => {
+    const tasks = state.tasks.filter(t => t.projectId === p.id);
+    const done = tasks.filter(t => t.done).length;
+    const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+    projHTML += `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>${p.emoji} ${p.name}</span>
+          <span style="color:var(--muted)">${done}/${tasks.length} (${pct}%)</span>
+        </div>
+        <div class="progress-bar"><div style="width:${pct}%"></div></div>
+      </div>
+    `;
+  });
+  $('stats-projects').innerHTML = projHTML || '<p style="color:var(--muted)">Нет данных</p>';
+
+  // По дням недели
+  const weekdays = [0,0,0,0,0,0,0];
+  state.tasks.filter(t => t.done && t.doneAt).forEach(t => {
+    const d = parseDate(t.doneAt);
+    const day = (d.getDay() + 6) % 7; // Пн=0
+    weekdays[day]++;
+  });
+  const maxDay = Math.max(...weekdays);
+  let weekHTML = '<div style="display:flex; gap:4px; align-items:end; height:100px;">';
+  weekdays.forEach((count, i) => {
+    const height = maxDay ? (count / maxDay * 100) : 0;
+    weekHTML += `
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+        <div style="width:100%; background:var(--accent); height:${height}%; border-radius:4px 4px 0 0;"></div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;">${WEEKDAYS[i]}</div>
+        <div style="font-size:10px; color:var(--muted);">${count}</div>
+      </div>
+    `;
+  });
+  weekHTML += '</div>';
+  $('stats-weekdays').innerHTML = weekHTML;
+}
+
 // ========== TELEGRAM ==========
 async function sendTG(text) {
   const {tgToken, tgChat} = state.settings;
@@ -1065,6 +1416,21 @@ function requestNotif() {
 }
 function notify(title, body) {
   if (Notification.permission === 'granted') new Notification(title, {body});
+}
+
+async function sendTodayToTG() {
+  const td = today();
+  const tasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
+  if (!tasks.length) {
+    alert('На сегодня нет задач');
+    return;
+  }
+  const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
+  let msg = `🌿 Задачи на сегодня (${td}):\n\n`;
+  tasks.forEach(t => msg += `• ${t.title} — ${t.hours}ч\n`);
+  msg += `\nВсего: ${h}ч`;
+  await sendTG(msg);
+  alert('✅ Отправлено в Telegram');
 }
 
 // ========== НАСТРОЙКИ ==========
@@ -1112,16 +1478,67 @@ function importData(e) {
 }
 function resetAll() {
   if (!confirm('Удалить ВСЁ?')) return;
-  localStorage.removeItem('planner_v3');
+  localStorage.removeItem('planner_v4');
   location.reload();
 }
+
+// ========== СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ==========
+async function syncToServer() {
+  try {
+    await fetch(SERVER_URL + '/api/data', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+    updateSyncStatus(true);
+  } catch(e) {
+    console.log('⚠️ Сервер недоступен:', e.message);
+    updateSyncStatus(false);
+  }
+}
+
+async function syncFromServer() {
+  try {
+    const r = await fetch(SERVER_URL + '/api/data');
+    if (r.ok) {
+      const remote = await r.json();
+      if (remote.tasks && remote.tasks.length > 0) {
+        state = {...state, ...remote};
+        DB.save(state);
+        renderAll();
+        console.log('✅ Загружено с сервера');
+      }
+      updateSyncStatus(true);
+    }
+  } catch(e) {
+    console.log('⚠️ Нет данных на сервере');
+    updateSyncStatus(false);
+  }
+}
+
+function updateSyncStatus(online) {
+  const el = $('sync-status');
+  if (online) {
+    el.className = 'sync-status online';
+    el.textContent = '✅ Сервер подключён';
+  } else {
+    el.className = 'sync-status offline';
+    el.textContent = '⚠️ Сервер недоступен (работает локально)';
+  }
+}
+
+// Переопределяем DB.save для автосинхронизации
+const _origSave = DB.save;
+DB.save = function(d) { 
+  _origSave(d); 
+  syncToServer(); 
+};
 
 // ========== ФОНОВЫЕ ПРОВЕРКИ ==========
 async function checkReminders() {
   const td = today();
   const now = new Date();
   const hm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  // Утренний брифинг 08:00
   if (hm === '08:00' && !sessionStorage.getItem('br_'+td)) {
     sessionStorage.setItem('br_'+td, '1');
     const tasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
@@ -1131,7 +1548,6 @@ async function checkReminders() {
     await sendTG(msg);
     notify('Доброе утро 🌿', `Сегодня ${tasks.length} задач`);
   }
-  // Вечерний отчёт 21:00
   if (hm === '21:00' && !sessionStorage.getItem('ev_'+td)) {
     sessionStorage.setItem('ev_'+td, '1');
     const done = state.tasks.filter(t => t.done && t.doneAt === td).length;
@@ -1147,7 +1563,10 @@ function renderAll() {
   renderNotes();
   renderHabits();
   renderRoutine();
+  renderGoals();
+  renderEnergy();
   renderFinance();
+  renderStats();
   updatePomoUI();
   loadSettings();
   const sel = $('t-project');
@@ -1159,33 +1578,6 @@ scheduleTasks();
 renderAll();
 setInterval(checkReminders, 30000);
 checkReminders();
-// ========== СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ==========
-async function syncToServer() {
-  try {
-    await fetch('http://localhost:5000/api/data', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(state)
-    });
-  } catch(e) { /* сервер выключен — тихо */ }
-}
-async function syncFromServer() {
-  try {
-    const r = await fetch('http://localhost:5000/api/data');
-    if (r.ok) {
-      const remote = await r.json();
-      if (remote.tasks && remote.tasks.length > state.tasks.length) {
-        state = {...state, ...remote};
-        DB.save(state);
-        renderAll();
-      }
-    }
-  } catch(e) {}
-}
-// Сохраняем на сервер при каждом изменении
-const _origSave = DB.save;
-DB.save = function(d) { _origSave(d); syncToServer(); };
-// Загружаем с сервера при старте
 syncFromServer();
 </script>
 </body>
