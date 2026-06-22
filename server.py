@@ -99,9 +99,13 @@ def deadline_check():
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
     scheduler = BackgroundScheduler()
+        # Утро
     scheduler.add_job(morning_briefing, 'cron', hour=8, minute=0)
-    scheduler.add_job(evening_report, 'cron', hour=21, minute=0)
+    # Дедлайны — 2 раза в день
     scheduler.add_job(deadline_check, 'cron', hour=9, minute=0)
+    scheduler.add_job(deadline_check, 'cron', hour=14, minute=0)
+    # Вечер — 1 раз
+    scheduler.add_job(evening_report, 'cron', hour=21, minute=0)
     scheduler.start()
     print('✅ Планировщик запущен')
 except Exception as e:
