@@ -8,6 +8,8 @@ import json, os, requests
 from datetime import datetime
 from flask import Flask, jsonify, request
 from apscheduler.schedulers.background import BackgroundScheduler
+TG_TOKEN = os.getenv('TG_TOKEN', '8629848748:AAGFpZlyRnowdS5lwxA6UclHnKsSeYI3kP8')
+TG_CHAT = os.getenv('TG_CHAT', '1366750627')
 
 app = Flask(__name__)
 DATA_FILE = 'planner_data.json'
