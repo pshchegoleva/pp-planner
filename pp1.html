@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Планировщик</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f1ea;
+    --card: #ffffff;
+    --text: #2d2a26;
+    --muted: #7a756d;
+    --border: #e5dfd4;
+    --accent: #6b8e7f;
+    --accent-dark: #4f6e5f;
+    --warn: #c97b63;
+    --err: #b85450;
+    --ok: #6b8e7f;
+  }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  header {
+    text-align: center;
+    padding: 24px;
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+  header p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .today-banner {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .today-banner b { font-size: 16px; }
+  .today-banner small { color: var(--muted); }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    background: var(--card);
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tab:hover { background: var(--bg); color: var(--text); }
+  .tab.active { background: var(--text); color: var(--card); }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: none;
+  }
+  .panel.active { display: block; }
+  h2 { font-size: 18px; margin-bottom: 14px; font-weight: 600; }
+  h3 { font-size: 15px; margin: 16px 0 10px; font-weight: 600; color: var(--accent-dark); }
+  .form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { width: 100%; min-height: 80px; resize: vertical; }
+  button {
+    cursor: pointer;
+    border: none;
+    background: var(--text);
+    color: var(--card);
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  button.ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+  button.accent { background: var(--accent); }
+  button.danger { background: var(--err); }
+  .task {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .task.done { opacity: 0.5; }
+  .task.done .t-title { text-decoration: line-through; }
+  .task.high { border-left: 3px solid var(--err); }
+  .task.mid { border-left: 3px solid var(--warn); }
+  .task.low { border-left: 3px solid var(--ok); }
+  .t-info { flex: 1; }
+  .t-title { font-weight: 500; margin-bottom: 4px; }
+  .t-meta { font-size: 12px; color: var(--muted); }
+  .t-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+  .t-actions button { padding: 6px 10px; font-size: 12px; }
+  .grid { display: grid; gap: 10px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+    border-left: 3px solid;
+  }
+  .alert.warn { background: #fdf3ee; border-color: var(--warn); color: #7a4a38; }
+  .alert.err { background: #fbeeed; border-color: var(--err); color: #7a2e2b; }
+  .alert.ok { background: #edf4f0; border-color: var(--ok); color: #3a5a4a; }
+  .alert.info { background: #eef2f5; border-color: #6b8ea5; color: #3a5a6b; }
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .cal-head { text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 0; }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    position: relative;
+  }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day.today { background: var(--text); color: var(--card); font-weight: 700; }
+  .cal-day.has-tasks { background: #e8e2d4; }
+  .cal-day.overload { background: #fbeeed; }
+  .cal-day .dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .note {
+    background: #fdf8ee;
+    border: 1px solid #e8dfc4;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .note-title { font-weight: 500; margin-bottom: 4px; }
+  .note-body { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  .note-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .habit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .habit-dots { display: flex; gap: 3px; }
+  .habit-dot {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    background: var(--border);
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--card);
+  }
+  .habit-dot.done { background: var(--accent); }
+  .chip {
+    display: inline-block;
+    padding: 3px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 11px;
+    margin: 2px;
+  }
+  .chip.urgent { background: #fbeeed; border-color: var(--err); color: #7a2e2b; }
+  .chip.mid { background: #fdf3ee; border-color: var(--warn); color: #7a4a38; }
+  .chip.low { background: #edf4f0; border-color: var(--ok); color: #3a5a4a; }
+  .routine-block {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .routine-block h4 { font-size: 13px; margin-bottom: 8px; color: var(--accent-dark); }
+  .pomodoro {
+    text-align: center;
+    padding: 30px 20px;
+    background: var(--bg);
+    border-radius: 12px;
+  }
+  .pomodoro-time {
+    font-size: 64px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    margin: 10px 0;
+  }
+  .pomodoro-label { color: var(--muted); margin-bottom: 16px; }
+  .stat-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-card .num { font-size: 28px; font-weight: 600; color: var(--accent-dark); }
+  .stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .fin-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .fin-row.income { border-left: 3px solid var(--ok); }
+  .fin-row.expense { border-left: 3px solid var(--err); }
+  .hidden { display: none !important; }
+  .days-left {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 6px;
+  }
+  .days-left.soon { background: #fbeeed; color: #7a2e2b; }
+  .days-left.mid { background: #fdf3ee; color: #7a4a38; }
+  .days-left.ok { background: #edf4f0; color: #3a5a4a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Планировщик</h1>
+  <p>Задача → дедлайн → распределение по дням</p>
+</header>
+
+<div class="today-banner" id="today-banner"></div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="tasks">📋 Задачи</button>
+  <button class="tab" data-tab="brain">🧠 Мозг</button>
+  <button class="tab" data-tab="calendar">📅 Календарь</button>
+  <button class="tab" data-tab="notes">📝 Заметки</button>
+  <button class="tab" data-tab="habits">✨ Привычки</button>
+  <button class="tab" data-tab="focus">🎯 Фокус</button>
+  <button class="tab" data-tab="routine">🍽 Режим</button>
+  <button class="tab" data-tab="finance">💰 Финансы</button>
+  <button class="tab" data-tab="settings">⚙️ Настройки</button>
+</div>
+
+<!-- ЗАДАЧИ -->
+<div class="panel active" id="panel-tasks">
+  <h2>➕ Новая задача</h2>
+  <div class="form-row">
+    <input id="t-title" placeholder="Что сделать?" style="flex:2; min-width:200px;">
+    <input id="t-hours" type="number" min="0.5" step="0.5" placeholder="Часов" style="width:100px;">
+  </div>
+  <div class="form-row">
+    <div style="flex:1; min-width:150px;">
+      <label class="label">Когда начать</label>
+      <input id="t-start" type="date" style="width:100%;">
+    </div>
+    <div style="flex:1; min-width:150px;">
+      <label class="label">Когда сдать (дедлайн)</label>
+      <input id="t-deadline" type="date" style="width:100%;">
+    </div>
+  </div>
+  <div class="form-row">
+    <select id="t-priority" style="flex:1; min-width:150px;">
+      <option value="high">🔥 Очень важно</option>
+      <option value="mid" selected>🟡 Средне</option>
+      <option value="low">🟢 Можно позже</option>
+    </select>
+    <select id="t-project" style="flex:1; min-width:150px;"></select>
+  </div>
+  <button onclick="addTask()">Добавить задачу</button>
+  <div id="load-alerts"></div>
+
+  <h3>📌 Сегодня</h3>
+  <div id="today-tasks"></div>
+
+  <h3>📅 Ближайшие</h3>
+  <div id="future-tasks"></div>
+
+  <h3>✅ Выполнено</h3>
+  <div id="done-tasks"></div>
+</div>
+
+<!-- МОЗГ -->
+<div class="panel" id="panel-brain">
+  <h2>🧠 Выгрузи всё</h2>
+  <p style="color:var(--muted); margin-bottom:10px;">Каждая строка → отдельная задача.</p>
+  <textarea id="brain-text" placeholder="Сделать демоэкзамен&#10;Закончить 3 экрана диплома&#10;Футболки IPA"></textarea>
+  <div class="form-row" style="margin-top:10px;">
+    <div style="flex:1;">
+      <label class="label">Когда сдать</label>
+      <input id="brain-deadline" type="date">
+    </div>
+    <select id="brain-priority">
+      <option value="high">🔥 Очень важно</option>
+      <option value="mid" selected>🟡 Средне</option>
+      <option value="low">🟢 Можно позже</option>
+    </select>
+    <button onclick="parseBrain()">Разобрать</button>
+  </div>
+  <div id="brain-preview"></div>
+</div>
+
+<!-- КАЛЕНДАРЬ -->
+<div class="panel" id="panel-calendar">
+  <h2>📅 Календарь</h2>
+  <div class="form-row">
+    <button class="ghost" onclick="changeMonth(-1)">◀</button>
+    <h3 id="cal-title" style="flex:1; text-align:center; margin:0;"></h3>
+    <button class="ghost" onclick="changeMonth(1)">▶</button>
+  </div>
+  <div class="calendar" id="calendar-grid"></div>
+  <div id="day-detail" style="margin-top:14px;"></div>
+</div>
+
+<!-- ЗАМЕТКИ -->
+<div class="panel" id="panel-notes">
+  <h2>📝 Заметки</h2>
+  <div class="form-row">
+    <input id="n-title" placeholder="Заголовок" style="flex:1;">
+  </div>
+  <textarea id="n-body" placeholder="Текст заметки, идея, инсайт..."></textarea>
+  <div class="form-row" style="margin-top:8px;">
+    <select id="n-tag">
+      <option value="">Без тега</option>
+      <option value="idea">💡 Идея</option>
+      <option value="work">💼 Работа</option>
+      <option value="study">📚 Учёба</option>
+      <option value="personal">🏠 Личное</option>
+    </select>
+    <button onclick="addNote()">Сохранить заметку</button>
+  </div>
+  <h3>Все заметки</h3>
+  <div id="notes-list"></div>
+</div>
+
+<!-- ПРИВЫЧКИ -->
+<div class="panel" id="panel-habits">
+  <h2>✨ Трекер привычек</h2>
+  <p style="color:var(--muted); margin-bottom:10px;">Отмечай каждый день. Последние 7 дней.</p>
+  <div id="habits-list"></div>
+  <h3>➕ Новая привычка</h3>
+  <div class="form-row">
+    <input id="h-name" placeholder="Например: Вода 2л, Чтение, Спорт">
+    <button onclick="addHabit()">Добавить</button>
+  </div>
+</div>
+
+<!-- ФОКУС -->
+<div class="panel" id="panel-focus">
+  <h2>🎯 Pomodoro-таймер</h2>
+  <div class="pomodoro">
+    <div class="pomodoro-label" id="pomo-label">Фокус</div>
+    <div class="pomodoro-time" id="pomo-time">25:00</div>
+    <div class="form-row" style="justify-content:center;">
+      <button class="accent" onclick="pomoStart()">▶ Старт</button>
+      <button class="ghost" onclick="pomoPause()">⏸ Пауза</button>
+      <button class="ghost" onclick="pomoReset()">↺ Сброс</button>
+    </div>
+    <div class="form-row" style="justify-content:center; margin-top:10px;">
+      <button class="ghost" onclick="pomoSet(25)">25 мин</button>
+      <button class="ghost" onclick="pomoSet(50)">50 мин</button>
+      <button class="ghost" onclick="pomoSet(5, 'Перерыв')">5 мин отдых</button>
+    </div>
+  </div>
+  <h3>📊 Сегодня</h3>
+  <div class="grid grid-3">
+    <div class="stat-card"><div class="num" id="pomo-done">0</div><div class="lbl">Сессий</div></div>
+    <div class="stat-card"><div class="num" id="pomo-mins">0</div><div class="lbl">Минут фокуса</div></div>
+    <div class="stat-card"><div class="num" id="pomo-tasks">0</div><div class="lbl">Задач закрыто</div></div>
+  </div>
+</div>
+
+<!-- РЕЖИМ -->
+<div class="panel" id="panel-routine">
+  <h2>🍽 Режим дня</h2>
+  <p style="color:var(--muted); margin-bottom:10px;">Распределение дня: учёба, еда, отдых, задачи.</p>
+  <div class="grid grid-2">
+    <div class="routine-block">
+      <h4>🌅 Утро</h4>
+      <div id="r-morning"></div>
+    </div>
+    <div class="routine-block">
+      <h4>☀️ День</h4>
+      <div id="r-day"></div>
+    </div>
+    <div class="routine-block">
+      <h4>🌆 Вечер</h4>
+      <div id="r-evening"></div>
+    </div>
+    <div class="routine-block">
+      <h4>🌙 Ночь</h4>
+      <div id="r-night"></div>
+    </div>
+  </div>
+  <h3>➕ Добавить блок</h3>
+  <div class="form-row">
+    <input id="rb-name" placeholder="Прогулка, Обед, Завтрак...">
+    <input id="rb-time" type="time">
+    <input id="rb-dur" type="number" placeholder="Минут" style="width:100px;">
+    <select id="rb-slot">
+      <option value="morning">🌅 Утро</option>
+      <option value="day">☀️ День</option>
+      <option value="evening">🌆 Вечер</option>
+      <option value="night">🌙 Ночь</option>
+    </select>
+    <button onclick="addRoutine()">+</button>
+  </div>
+</div>
+
+<!-- ФИНАНСЫ -->
+<div class="panel" id="panel-finance">
+  <h2>💰 Финансы</h2>
+  <div class="grid grid-2">
+    <div>
+      <h3>➕ Доход</h3>
+      <input id="fin-in-title" placeholder="Источник" style="width:100%; margin-bottom:6px;">
+      <div class="form-row">
+        <input id="fin-in-amount" type="number" placeholder="Сумма">
+        <input id="fin-in-date" type="date">
+        <button onclick="addFinance('income')">+</button>
+      </div>
+    </div>
+    <div>
+      <h3>➕ Расход</h3>
+      <input id="fin-ex-title" placeholder="Категория" style="width:100%; margin-bottom:6px;">
+      <div class="form-row">
+        <input id="fin-ex-amount" type="number" placeholder="Сумма">
+        <input id="fin-ex-date" type="date">
+        <button onclick="addFinance('expense')">+</button>
+      </div>
+    </div>
+  </div>
+  <div id="fin-summary" style="margin-top:14px;"></div>
+  <h3>📊 История</h3>
+  <div id="fin-list"></div>
+</div>
+
+<!-- НАСТРОЙКИ -->
+<div class="panel" id="panel-settings">
+  <h2>⚙️ Настройки</h2>
+  <h3>🕐 Рабочий день</h3>
+  <div class="grid grid-2">
+    <div><label class="label">Подъём</label><input id="s-wake" type="time"></div>
+    <div><label class="label">Отбой</label><input id="s-sleep" type="time"></div>
+    <div><label class="label">Учёба (ч/день)</label><input id="s-study" type="number" min="0" step="0.5"></div>
+    <div><label class="label">Работа (ч/день)</label><input id="s-work" type="number" min="0" step="0.5"></div>
+    <div><label class="label">Макс задач в день (ч)</label><input id="s-max" type="number" min="1" step="0.5"></div>
+    <div><label class="label">Напоминание за (мин)</label><input id="s-remind" type="number" min="5" step="5"></div>
+  </div>
+  <button onclick="saveSettings()" style="margin-top:10px;">Сохранить</button>
+
+  <h3>📲 Telegram</h3>
+  <div class="alert info">
+    <b>Как подключить:</b><br>
+    1. @BotFather → /newbot → получишь токен<br>
+    2. @userinfobot → получишь Chat ID<br>
+    3. Напиши своему боту /start<br>
+    4. Вставь данные ниже
+  </div>
+  <div class="form-row">
+    <input id="s-tg-token" placeholder="Bot Token" style="flex:2;">
+    <input id="s-tg-chat" placeholder="Chat ID" style="flex:1;">
+  </div>
+  <div class="form-row">
+    <button onclick="saveTG()">Сохранить</button>
+    <button class="ghost" onclick="testTG()">Тест</button>
+    <button class="ghost" onclick="requestNotif()">🔔 Уведомления</button>
+  </div>
+  <div id="tg-status"></div>
+
+  <h3>🖥 Python-сервер (24/7 уведомления)</h3>
+  <div class="alert info">
+    Чтобы напоминания работали при <b>выключенном браузере</b>:<br>
+    1. Установи Python с python.org<br>
+    2. В терминале: <code>pip install flask apscheduler requests</code><br>
+    3. Положи рядом файл <b>server.py</b> (код ниже)<br>
+    4. Запусти: <code>python server.py</code><br>
+    Сервер будет слать уведомления по расписанию, даже если браузер закрыт.
+  </div>
+
+  <h3>🗄 Данные</h3>
+  <div class="form-row">
+    <button class="ghost" onclick="exportData()">📥 Экспорт</button>
+    <button class="ghost" onclick="document.getElementById('import-file').click()">📤 Импорт</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="danger" onclick="resetAll()">🗑 Сброс</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ========== ХРАНИЛИЩЕ ==========
+const DB = {
+  load() {
+    const d = JSON.parse(localStorage.getItem('planner_v3') || '{}');
+    return {
+      tasks: d.tasks || [],
+      projects: d.projects || [
+        {id:'p1', name:'Диплом', emoji:'🎓'},
+        {id:'p2', name:'Практика', emoji:'💻'},
+        {id:'p3', name:'IPA', emoji:'🍺'},
+        {id:'p4', name:'IBeauty', emoji:'💄'},
+        {id:'p5', name:'Lashes', emoji:'💅'},
+        {id:'p6', name:'Личное', emoji:'🏠'}
+      ],
+      notes: d.notes || [],
+      habits: d.habits || [],
+      routine: d.routine || [
+        {id:'r1', name:'Завтрак', time:'08:30', dur:30, slot:'morning'},
+        {id:'r2', name:'Обед', time:'13:00', dur:60, slot:'day'},
+        {id:'r3', name:'Прогулка', time:'18:00', dur:40, slot:'evening'},
+        {id:'r4', name:'Ужин', time:'20:00', dur:30, slot:'evening'}
+      ],
+      finance: d.finance || [],
+      settings: d.settings || {
+        wake:'08:00', sleep:'23:00', study:4, work:2, max:6, remind:30,
+        tgToken:'', tgChat:''
+      },
+      pomo: d.pomo || { done:0, mins:0, date:'' },
+      calMonth: d.calMonth ?? new Date().getMonth(),
+      calYear: d.calYear ?? new Date().getFullYear()
+    };
+  },
+  save(d) { localStorage.setItem('planner_v3', JSON.stringify(d)); }
+};
+let state = DB.load();
+
+// ========== УТИЛИТЫ (ИСПРАВЛЕН БАГ С ДАТАМИ!) ==========
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+// ВАЖНО: используем ЛОКАЛЬНОЕ время, а не UTC
+const fmtDate = d => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+};
+const parseDate = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const today = () => fmtDate(new Date());
+const daysBetween = (a,b) => Math.round((parseDate(b)-parseDate(a))/86400000);
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WEEKDAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+function hoursOnDay(dateStr) {
+  return state.tasks
+    .filter(t => t.scheduledDate === dateStr && !t.done)
+    .reduce((s,t) => s + Number(t.hours||0), 0);
+}
+
+// ========== ВКЛАДКИ ==========
+document.querySelectorAll('.tab').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    $('panel-' + b.dataset.tab).classList.add('active');
+    renderAll();
+  };
+});
+
+// ========== БАННЕР СЕГОДНЯ ==========
+function renderBanner() {
+  const d = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long' };
+  const dateStr = d.toLocaleDateString('ru-RU', opts);
+  const td = today();
+  const tasksToday = state.tasks.filter(t => !t.done && t.scheduledDate === td).length;
+  const overdue = state.tasks.filter(t => !t.done && t.deadline < td).length;
+  const urgent = state.tasks.filter(t => !t.done && daysBetween(td, t.deadline) <= 2 && daysBetween(td, t.deadline) >= 0).length;
+  let warn = '';
+  if (overdue) warn += ` <span class="chip urgent">🚨 Просрочено: ${overdue}</span>`;
+  if (urgent) warn += ` <span class="chip mid">⏰ Скоро: ${urgent}</span>`;
+  $('today-banner').innerHTML = `
+    <div>
+      <b>${dateStr.charAt(0).toUpperCase()+dateStr.slice(1)}</b><br>
+      <small>Задач на сегодня: ${tasksToday}${warn}</small>
+    </div>
+    <div style="text-align:right;">
+      <small>Сегодня: <b>${fmtDate(d)}</b></small>
+    </div>
+  `;
+}
+
+// ========== ЗАДАЧИ ==========
+function addTask() {
+  const title = $('t-title').value.trim();
+  const hours = parseFloat($('t-hours').value);
+  const deadline = $('t-deadline').value;
+  const start = $('t-start').value || today();
+  if (!title || !hours || !deadline) { alert('Заполни название, часы и дедлайн'); return; }
+  if (deadline < start) { alert('Дедлайн не может быть раньше даты начала'); return; }
+  if (deadline < today()) {
+    if (!confirm('Дедлайн уже прошёл. Всё равно добавить?')) return;
+  }
+  const task = {
+    id: uid(), title, hours, deadline, start,
+    priority: $('t-priority').value,
+    projectId: $('t-project').value,
+    created: today(),
+    scheduledDate: null,
+    done: false,
+    movedCount: 0
+  };
+  state.tasks.push(task);
+  scheduleTasks();
+  DB.save(state);
+  $('t-title').value = ''; $('t-hours').value = '';
+  renderAll();
+}
+
+function scheduleTasks() {
+  const active = state.tasks.filter(t => !t.done);
+  const todayDate = parseDate(today());
+  active.forEach(t => {
+    // Сбрасываем расписание если дата старта изменилась или просрочено
+    const startDate = parseDate(t.start || today());
+    const effectiveStart = startDate > todayDate ? startDate : todayDate;
+    const dl = parseDate(t.deadline);
+    if (t.scheduledDate && parseDate(t.scheduledDate) >= effectiveStart && parseDate(t.scheduledDate) <= dl) return;
+    let d = new Date(effectiveStart);
+    let placed = false;
+    while (d <= dl) {
+      const ds = fmtDate(d);
+      if (hoursOnDay(ds) + Number(t.hours) <= state.settings.max) {
+        t.scheduledDate = ds;
+        placed = true;
+        break;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    if (!placed) t.scheduledDate = t.deadline;
+  });
+}
+
+function toggleDone(id) {
+  const t = state.tasks.find(x => x.id === id);
+  t.done = !t.done;
+  if (t.done) {
+    t.doneAt = today();
+    state.pomo.tasks = (state.pomo.tasks||0) + 1;
+    state.pomo.date = today();
+  }
+  DB.save(state);
+  renderAll();
+}
+
+function postpone(id) {
+  const t = state.tasks.find(x => x.id === id);
+  const d = parseDate(t.scheduledDate || today());
+  d.setDate(d.getDate() + 1);
+  t.scheduledDate = fmtDate(d);
+  t.movedCount = (t.movedCount||0) + 1;
+  DB.save(state);
+  renderAll();
+}
+
+function deleteTask(id) {
+  if (!confirm('Удалить задачу?')) return;
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  DB.save(state);
+  renderAll();
+}
+
+function renderTask(t) {
+  const proj = state.projects.find(p => p.id === t.projectId);
+  const td = today();
+  const dl = parseDate(t.deadline);
+  const td2 = parseDate(td);
+  const daysLeft = Math.ceil((dl - td2)/86400000);
+  let daysChip = '';
+  if (!t.done) {
+    if (daysLeft < 0) daysChip = `<span class="days-left soon">Просрочено ${-daysLeft}д</span>`;
+    else if (daysLeft === 0) daysChip = `<span class="days-left soon">Сегодня!</span>`;
+    else if (daysLeft === 1) daysChip = `<span class="days-left soon">Завтра</span>`;
+    else if (daysLeft <= 3) daysChip = `<span class="days-left mid">${daysLeft}д</span>`;
+    else daysChip = `<span class="days-left ok">${daysLeft}д</span>`;
+  }
+  return `
+    <div class="task ${t.done?'done':''} ${t.priority}">
+      <div class="t-info">
+        <div class="t-title">${t.title} ${daysChip}</div>
+        <div class="t-meta">
+          ${proj ? proj.emoji+' '+proj.name+' • ' : ''}${t.hours}ч • 
+          Сдать: ${t.deadline} • В плане: ${t.scheduledDate||'—'}
+          ${t.movedCount>0?` • Переносов: ${t.movedCount}`:''}
+        </div>
+      </div>
+      <div class="t-actions">
+        <button class="ghost" onclick="toggleDone('${t.id}')">${t.done?'↺':'✓'}</button>
+        ${!t.done?`<button class="ghost" onclick="postpone('${t.id}')">⏭</button>`:''}
+        <button class="danger" onclick="deleteTask('${t.id}')">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderTasks() {
+  const td = today();
+  const todayTasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
+  const future = state.tasks.filter(t => !t.done && t.scheduledDate && t.scheduledDate > td).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate));
+  const done = state.tasks.filter(t => t.done).slice(-10).reverse();
+
+  $('today-tasks').innerHTML = todayTasks.length ? todayTasks.map(renderTask).join('') : '<p style="color:var(--muted)">На сегодня ничего 🌿</p>';
+  $('future-tasks').innerHTML = future.length ? future.map(renderTask).join('') : '<p style="color:var(--muted)">Пусто</p>';
+  $('done-tasks').innerHTML = done.length ? done.map(renderTask).join('') : '<p style="color:var(--muted)">Пока нет</p>';
+
+  let alerts = '';
+  state.tasks.filter(t=>!t.done).forEach(t => {
+    const daysLeft = daysBetween(td, t.deadline);
+    if (daysLeft < 0) alerts += `<div class="alert err">🚨 Просрочено: <b>${t.title}</b> (${t.deadline})</div>`;
+    else if (daysLeft === 0) alerts += `<div class="alert warn">⏰ Сдать сегодня: <b>${t.title}</b></div>`;
+    else if (daysLeft === 1) alerts += `<div class="alert warn">⏰ Завтра сдать: <b>${t.title}</b></div>`;
+  });
+  $('load-alerts').innerHTML = alerts;
+}
+
+// ========== МОЗГ ==========
+function parseBrain() {
+  const text = $('brain-text').value.trim();
+  if (!text) return;
+  const deadline = $('brain-deadline').value;
+  if (!deadline) { alert('Укажи когда сдать'); return; }
+  const priority = $('brain-priority').value;
+  const lines = text.split('\n').map(s=>s.trim()).filter(Boolean);
+  let html = '<h3 style="margin-top:14px;">Будет создано:</h3>';
+  lines.forEach(l => html += `<div class="chip">${l}</div>`);
+  html += `<br><br><button onclick="confirmBrain()">✅ Создать ${lines.length} задач</button>`;
+  $('brain-preview').innerHTML = html;
+  window._brainLines = lines;
+  window._brainDL = deadline;
+  window._brainPr = priority;
+}
+function confirmBrain() {
+  const td = today();
+  window._brainLines.forEach(l => {
+    state.tasks.push({
+      id: uid(), title: l, hours: 2, deadline: window._brainDL, start: td,
+      priority: window._brainPr, projectId: state.projects[0].id,
+      created: td, scheduledDate: null, done: false, movedCount: 0
+    });
+  });
+  scheduleTasks();
+  DB.save(state);
+  $('brain-text').value = '';
+  $('brain-preview').innerHTML = '<div class="alert ok">✅ Готово!</div>';
+  renderAll();
+}
+
+// ========== КАЛЕНДАРЬ ==========
+function changeMonth(d) {
+  state.calMonth += d;
+  if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
+  if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
+  DB.save(state);
+  renderCalendar();
+}
+function renderCalendar() {
+  $('cal-title').textContent = `${MONTHS[state.calMonth]} ${state.calYear}`;
+  const first = new Date(state.calYear, state.calMonth, 1);
+  const last = new Date(state.calYear, state.calMonth+1, 0);
+  let startDay = first.getDay(); if (startDay===0) startDay=7; startDay--;
+  let html = WEEKDAYS.map(w=>`<div class="cal-head">${w}</div>`).join('');
+  for (let i=0;i<startDay;i++) html += '<div class="cal-day empty"></div>';
+  const td = today();
+  for (let d=1; d<=last.getDate(); d++) {
+    const dateObj = new Date(state.calYear, state.calMonth, d);
+    const ds = fmtDate(dateObj);
+    const h = hoursOnDay(ds);
+    const cls = [];
+    if (ds === td) cls.push('today');
+    if (h > 0) cls.push('has-tasks');
+    if (h > state.settings.max) cls.push('overload');
+    html += `<div class="cal-day ${cls.join(' ')}" onclick="showDay('${ds}')">
+      ${d}${h>0?`<div class="dot"></div>`:''}
+    </div>`;
+  }
+  $('calendar-grid').innerHTML = html;
+}
+function showDay(ds) {
+  const tasks = state.tasks.filter(t => t.scheduledDate === ds);
+  const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
+  let html = `<div class="alert info"><b>${ds}</b> • Загрузка: ${h}ч из ${state.settings.max}ч</div>`;
+  if (tasks.length) html += tasks.map(renderTask).join('');
+  else html += '<p style="color:var(--muted)">Задач нет</p>';
+  $('day-detail').innerHTML = html;
+}
+
+// ========== ЗАМЕТКИ ==========
+function addNote() {
+  const title = $('n-title').value.trim();
+  const body = $('n-body').value.trim();
+  if (!title && !body) return;
+  state.notes.unshift({
+    id: uid(), title, body, tag: $('n-tag').value,
+    created: new Date().toISOString()
+  });
+  $('n-title').value = ''; $('n-body').value = '';
+  DB.save(state);
+  renderNotes();
+}
+function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  DB.save(state);
+  renderNotes();
+}
+function renderNotes() {
+  const tagNames = {idea:'💡 Идея', work:'💼 Работа', study:'📚 Учёба', personal:'🏠 Личное'};
+  $('notes-list').innerHTML = state.notes.length ? state.notes.map(n => `
+    <div class="note">
+      <div class="note-title">${n.title||'(без заголовка)'} ${n.tag?`<span class="chip">${tagNames[n.tag]||n.tag}</span>`:''}</div>
+      <div class="note-body">${n.body||''}</div>
+      <div class="note-meta">${new Date(n.created).toLocaleString('ru-RU')} 
+        <button class="ghost" style="padding:2px 8px; font-size:11px; margin-left:6px;" onclick="deleteNote('${n.id}')">🗑</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--muted)">Нет заметок</p>';
+}
+
+// ========== ПРИВЫЧКИ ==========
+function addHabit() {
+  const name = $('h-name').value.trim();
+  if (!name) return;
+  state.habits.push({id: uid(), name, log:{}});
+  $('h-name').value = '';
+  DB.save(state);
+  renderHabits();
+}
+function toggleHabit(hid, day) {
+  const h = state.habits.find(x => x.id === hid);
+  h.log[day] = !h.log[day];
+  DB.save(state);
+  renderHabits();
+}
+function deleteHabit(id) {
+  state.habits = state.habits.filter(h => h.id !== id);
+  DB.save(state);
+  renderHabits();
+}
+function renderHabits() {
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(fmtDate(d));
+  }
+  const dayNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  let head = '<div style="display:flex; gap:3px; margin-bottom:6px; padding-left: 150px;">';
+  days.forEach(d => {
+    const dn = dayNames[parseDate(d).getDay()];
+    head += `<div style="width:20px; text-align:center; font-size:10px; color:var(--muted);">${dn}</div>`;
+  });
+  head += '</div>';
+  let html = head;
+  state.habits.forEach(h => {
+    html += `<div class="habit">
+      <div style="flex:1; min-width:150px;">
+        <b>${h.name}</b>
+        <button class="ghost" style="padding:2px 6px; font-size:10px; margin-left:6px;" onclick="deleteHabit('${h.id}')">🗑</button>
+      </div>
+      <div class="habit-dots">`;
+    days.forEach(d => {
+      const done = h.log[d];
+      const short = d.slice(8);
+      html += `<div class="habit-dot ${done?'done':''}" onclick="toggleHabit('${h.id}','${d}')" title="${d}">${short}</div>`;
+    });
+    html += `</div></div>`;
+  });
+  $('habits-list').innerHTML = html || '<p style="color:var(--muted)">Добавь первую привычку</p>';
+}
+
+// ========== POMODORO ==========
+let pomoInterval = null;
+let pomoSeconds = 25*60;
+let pomoMode = 'Фокус';
+function pomoSet(min, label) {
+  pomoSeconds = min*60;
+  pomoMode = label || 'Фокус';
+  clearInterval(pomoInterval);
+  updatePomoUI();
+}
+function updatePomoUI() {
+  const m = Math.floor(pomoSeconds/60);
+  const s = pomoSeconds%60;
+  $('pomo-time').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  $('pomo-label').textContent = pomoMode;
+  if (state.pomo.date !== today()) { state.pomo = {done:0, mins:0, tasks:0, date:today()}; DB.save(state); }
+  $('pomo-done').textContent = state.pomo.done||0;
+  $('pomo-mins').textContent = state.pomo.mins||0;
+  $('pomo-tasks').textContent = state.pomo.tasks||0;
+}
+function pomoStart() {
+  if (pomoInterval) return;
+  const startSec = pomoSeconds;
+  pomoInterval = setInterval(() => {
+    pomoSeconds--;
+    if (pomoSeconds <= 0) {
+      clearInterval(pomoInterval);
+      pomoInterval = null;
+      if (pomoMode === 'Фокус') {
+        state.pomo.done = (state.pomo.done||0) + 1;
+        state.pomo.mins = (state.pomo.mins||0) + Math.round(startSec/60);
+        state.pomo.date = today();
+        DB.save(state);
+        notify('Pomodoro', 'Сессия завершена! Отдых 5 минут');
+        sendTG('🎯 Pomodoro завершён. Отдыхай 5 минут 🌿');
+      } else {
+        notify('Pomodoro', 'Перерыв окончен. Возвращаемся к работе!');
+      }
+      pomoSeconds = 25*60;
+      pomoMode = 'Фокус';
+    }
+    updatePomoUI();
+  }, 1000);
+}
+function pomoPause() { clearInterval(pomoInterval); pomoInterval = null; }
+function pomoReset() { pomoPause(); pomoSeconds = 25*60; pomoMode='Фокус'; updatePomoUI(); }
+
+// ========== РЕЖИМ ==========
+function addRoutine() {
+  const name = $('rb-name').value.trim();
+  const time = $('rb-time').value;
+  const dur = parseInt($('rb-dur').value);
+  const slot = $('rb-slot').value;
+  if (!name || !time || !dur) return;
+  state.routine.push({id: uid(), name, time, dur, slot});
+  $('rb-name').value=''; $('rb-time').value=''; $('rb-dur').value='';
+  DB.save(state);
+  renderRoutine();
+}
+function deleteRoutine(id) {
+  state.routine = state.routine.filter(r => r.id !== id);
+  DB.save(state);
+  renderRoutine();
+}
+function renderRoutine() {
+  ['morning','day','evening','night'].forEach(slot => {
+    const items = state.routine.filter(r => r.slot === slot).sort((a,b)=>a.time.localeCompare(b.time));
+    const id = slot === 'morning' ? 'r-morning' : slot === 'day' ? 'r-day' : slot === 'evening' ? 'r-evening' : 'r-night';
+    $(id).innerHTML = items.length ? items.map(r => `
+      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
+        <span><b>${r.time}</b> ${r.name} <small style="color:var(--muted)">(${r.dur} мин)</small></span>
+        <button class="ghost" style="padding:2px 6px; font-size:10px;" onclick="deleteRoutine('${r.id}')">🗑</button>
+      </div>
+    `).join('') : '<small style="color:var(--muted)">Пусто</small>';
+  });
+}
+
+// ========== ФИНАНСЫ ==========
+function addFinance(type) {
+  const prefix = type === 'income' ? 'in' : 'ex';
+  const title = $(`fin-${prefix}-title`).value.trim();
+  const amount = parseFloat($(`fin-${prefix}-amount`).value);
+  const date = $(`fin-${prefix}-date`).value || today();
+  if (!title || !amount) { alert('Заполни поля'); return; }
+  state.finance.push({id: uid(), type, title, amount, date});
+  $(`fin-${prefix}-title`).value = ''; $(`fin-${prefix}-amount`).value = '';
+  DB.save(state);
+  renderFinance();
+}
+function deleteFinance(id) {
+  state.finance = state.finance.filter(f => f.id !== id);
+  DB.save(state);
+  renderFinance();
+}
+function renderFinance() {
+  const inc = state.finance.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
+  const exp = state.finance.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
+  $('fin-summary').innerHTML = `
+    <div class="grid grid-3">
+      <div class="stat-card"><div class="num" style="color:var(--ok)">+${inc.toLocaleString()}</div><div class="lbl">Доходы ₽</div></div>
+      <div class="stat-card"><div class="num" style="color:var(--err)">-${exp.toLocaleString()}</div><div class="lbl">Расходы ₽</div></div>
+      <div class="stat-card"><div class="num">${(inc-exp).toLocaleString()}</div><div class="lbl">Баланс ₽</div></div>
+    </div>
+  `;
+  const list = [...state.finance].sort((a,b)=>b.date.localeCompare(a.date));
+  $('fin-list').innerHTML = list.map(f => `
+    <div class="fin-row ${f.type}">
+      <div><b>${f.title}</b><br><small style="color:var(--muted)">${f.date}</small></div>
+      <div>
+        <b>${f.type==='income'?'+':'-'}${f.amount.toLocaleString()} ₽</b>
+        <button class="ghost" style="padding:4px 8px; font-size:11px; margin-left:6px;" onclick="deleteFinance('${f.id}')">🗑</button>
+      </div>
+    </div>
+  `).join('') || '<p style="color:var(--muted)">Нет записей</p>';
+}
+
+// ========== TELEGRAM ==========
+async function sendTG(text) {
+  const {tgToken, tgChat} = state.settings;
+  if (!tgToken || !tgChat) return false;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({chat_id: tgChat, text})
+    });
+    const j = await r.json();
+    $('tg-status').innerHTML = j.ok ? '<div class="alert ok">✅ Отправлено</div>' : `<div class="alert err">❌ ${j.description}</div>`;
+    return j.ok;
+  } catch(e) {
+    $('tg-status').innerHTML = `<div class="alert err">❌ ${e.message}</div>`;
+    return false;
+  }
+}
+function saveTG() {
+  state.settings.tgToken = $('s-tg-token').value.trim();
+  state.settings.tgChat = $('s-tg-chat').value.trim();
+  DB.save(state);
+  $('tg-status').innerHTML = '<div class="alert ok">✅ Сохранено</div>';
+}
+async function testTG() { await sendTG('🌿 Тест от планировщика'); }
+function requestNotif() {
+  if (!('Notification' in window)) { alert('Не поддерживается'); return; }
+  Notification.requestPermission().then(p => {
+    $('tg-status').innerHTML = p === 'granted' ? '<div class="alert ok">✅ Разрешены</div>' : '<div class="alert warn">⚠️ Отклонено</div>';
+  });
+}
+function notify(title, body) {
+  if (Notification.permission === 'granted') new Notification(title, {body});
+}
+
+// ========== НАСТРОЙКИ ==========
+function loadSettings() {
+  const s = state.settings;
+  $('s-wake').value = s.wake;
+  $('s-sleep').value = s.sleep;
+  $('s-study').value = s.study;
+  $('s-work').value = s.work;
+  $('s-max').value = s.max;
+  $('s-remind').value = s.remind;
+  $('s-tg-token').value = s.tgToken;
+  $('s-tg-chat').value = s.tgChat;
+}
+function saveSettings() {
+  state.settings.wake = $('s-wake').value;
+  state.settings.sleep = $('s-sleep').value;
+  state.settings.study = parseFloat($('s-study').value)||0;
+  state.settings.work = parseFloat($('s-work').value)||0;
+  state.settings.max = parseFloat($('s-max').value)||6;
+  state.settings.remind = parseInt($('s-remind').value)||30;
+  DB.save(state);
+  scheduleTasks();
+  renderAll();
+  alert('✅ Сохранено');
+}
+
+// ========== ЭКСПОРТ/ИМПОРТ ==========
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `planner-${today()}.json`;
+  a.click();
+}
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try { state = JSON.parse(ev.target.result); DB.save(state); renderAll(); alert('✅'); }
+    catch { alert('❌'); }
+  };
+  r.readAsText(file);
+}
+function resetAll() {
+  if (!confirm('Удалить ВСЁ?')) return;
+  localStorage.removeItem('planner_v3');
+  location.reload();
+}
+
+// ========== ФОНОВЫЕ ПРОВЕРКИ ==========
+async function checkReminders() {
+  const td = today();
+  const now = new Date();
+  const hm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  // Утренний брифинг 08:00
+  if (hm === '08:00' && !sessionStorage.getItem('br_'+td)) {
+    sessionStorage.setItem('br_'+td, '1');
+    const tasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
+    const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
+    let msg = `🌿 Доброе утро!\n\nСегодня: ${tasks.length} задач • ${h}ч\n\n`;
+    tasks.forEach(t => msg += `• ${t.title} — ${t.hours}ч\n`);
+    await sendTG(msg);
+    notify('Доброе утро 🌿', `Сегодня ${tasks.length} задач`);
+  }
+  // Вечерний отчёт 21:00
+  if (hm === '21:00' && !sessionStorage.getItem('ev_'+td)) {
+    sessionStorage.setItem('ev_'+td, '1');
+    const done = state.tasks.filter(t => t.done && t.doneAt === td).length;
+    await sendTG(`🌙 Итоги дня\n\n✅ Выполнено: ${done}`);
+  }
+}
+
+// ========== РЕНДЕР ==========
+function renderAll() {
+  renderBanner();
+  renderTasks();
+  renderCalendar();
+  renderNotes();
+  renderHabits();
+  renderRoutine();
+  renderFinance();
+  updatePomoUI();
+  loadSettings();
+  const sel = $('t-project');
+  sel.innerHTML = state.projects.map(p => `<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
+}
+
+// ========== СТАРТ ==========
+scheduleTasks();
+renderAll();
+setInterval(checkReminders, 30000);
+checkReminders();
+// ========== СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ==========
+async function syncToServer() {
+  try {
+    await fetch('http://localhost:5000/api/data', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+  } catch(e) { /* сервер выключен — тихо */ }
+}
+async function syncFromServer() {
+  try {
+    const r = await fetch('http://localhost:5000/api/data');
+    if (r.ok) {
+      const remote = await r.json();
+      if (remote.tasks && remote.tasks.length > state.tasks.length) {
+        state = {...state, ...remote};
+        DB.save(state);
+        renderAll();
+      }
+    }
+  } catch(e) {}
+}
+// Сохраняем на сервер при каждом изменении
+const _origSave = DB.save;
+DB.save = function(d) { _origSave(d); syncToServer(); };
+// Загружаем с сервера при старте
+syncFromServer();
+</script>
+</body>
+</html>
