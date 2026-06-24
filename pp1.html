@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<writeFile>
+<path>index.html</path>
+<content><!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -8,409 +10,557 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #f5f1ea;
+    --bg-dark: #e8e2d4;
     --card: #ffffff;
     --text: #2d2a26;
     --muted: #7a756d;
     --border: #e5dfd4;
-    --accent: #6b8e7f;
-    --accent-dark: #4f6e5f;
+    --accent: #3d2c5c;
+    --accent-light: #6b5b8a;
+    --accent-dark: #2a1d42;
+    --olive: #6b8e7f;
+    --olive-dark: #4f6e5f;
     --warn: #c97b63;
     --err: #b85450;
     --ok: #6b8e7f;
+    --gold: #d4a574;
+    --sidebar-width: 260px;
   }
   body {
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
+    background: linear-gradient(135deg, #f5f1ea 0%, #e8e2d4 100%);
     color: var(--text);
     min-height: 100vh;
-    padding: 16px;
     line-height: 1.5;
   }
-  .wrap { max-width: 1100px; margin: 0 auto; }
-  header {
-    text-align: center;
-    padding: 24px;
-    background: var(--card);
-    border-radius: 16px;
-    border: 1px solid var(--border);
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  /* ========== БОКОВАЯ ПАНЕЛЬ ========== */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: linear-gradient(180deg, var(--accent-dark) 0%, var(--accent) 100%);
+    color: white;
+    padding: 24px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  }
+  .sidebar-header {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 20px;
   }
-  header h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
-  header p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .sidebar-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .sidebar-header p {
+    font-size: 12px;
+    opacity: 0.8;
+  }
   .sync-status {
     display: inline-block;
     padding: 4px 10px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 10px;
     margin-top: 8px;
   }
-  .sync-status.online { background: #edf4f0; color: #3a5a4a; }
-  .sync-status.offline { background: #fdf3ee; color: #7a4a38; }
+  .sync-status.online { background: rgba(107, 142, 127, 0.3); }
+  .sync-status.offline { background: rgba(201, 123, 99, 0.3); }
+  
+  .nav-section {
+    margin-bottom: 20px;
+  }
+  .nav-title {
+    padding: 8px 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+    font-weight: 600;
+  }
+  .nav-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-left-color: rgba(255,255,255,0.3);
+  }
+  .nav-item.active {
+    background: rgba(255,255,255,0.15);
+    border-left-color: var(--gold);
+    font-weight: 600;
+  }
+  .nav-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+  
+  /* ========== ОСНОВНОЙ КОНТЕНТ ========== */
+  .main {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 24px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  
   .today-banner {
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 16px;
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(61, 44, 92, 0.08);
   }
-  .today-banner b { font-size: 16px; }
+  .today-banner b { font-size: 18px; color: var(--accent); }
   .today-banner small { color: var(--muted); }
-  .tabs {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    background: var(--card);
-    padding: 6px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-  }
-  .tab {
-    flex: 1;
-    min-width: 90px;
-    padding: 10px 12px;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
-    transition: all 0.15s;
-  }
-  .tab:hover { background: var(--bg); color: var(--text); }
-  .tab.active { background: var(--text); color: var(--card); }
+  
   .panel {
     background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
     display: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
   }
   .panel.active { display: block; }
-  h2 { font-size: 18px; margin-bottom: 14px; font-weight: 600; }
-  h3 { font-size: 15px; margin: 16px 0 10px; font-weight: 600; color: var(--accent-dark); }
-  .form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  
+  h2 { 
+    font-size: 22px; 
+    margin-bottom: 16px; 
+    font-weight: 700;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+  }
+  h3 { 
+    font-size: 16px; 
+    margin: 20px 0 12px; 
+    font-weight: 600; 
+    color: var(--accent-light);
+  }
+  
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
   input, select, textarea, button {
     font-family: inherit;
     font-size: 14px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
     background: var(--card);
     color: var(--text);
     outline: none;
+    transition: all 0.2s;
   }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input:focus, select:focus, textarea:focus { 
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(61, 44, 92, 0.1);
+  }
   textarea { width: 100%; min-height: 80px; resize: vertical; }
   button {
     cursor: pointer;
     border: none;
-    background: var(--text);
-    color: var(--card);
-    font-weight: 500;
-    transition: opacity 0.15s;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: white;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(61, 44, 92, 0.2);
   }
-  button:hover { opacity: 0.85; }
-  button.ghost { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-  button.accent { background: var(--accent); }
-  button.danger { background: var(--err); }
+  button:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(61, 44, 92, 0.3);
+  }
+  button.ghost { 
+    background: var(--bg); 
+    color: var(--accent);
+    border: 2px solid var(--border);
+    box-shadow: none;
+  }
+  button.ghost:hover { background: var(--bg-dark); }
+  button.accent { background: linear-gradient(135deg, var(--olive) 0%, var(--olive-dark) 100%); }
+  button.danger { background: linear-gradient(135deg, var(--err) 0%, #8b3a37 100%); }
+  
   .task {
     background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 12px 14px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+    border: 2px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    transition: all 0.2s;
   }
-  .task.done { opacity: 0.5; }
+  .task:hover { transform: translateX(4px); }
+  .task.done { opacity: 0.6; }
   .task.done .t-title { text-decoration: line-through; }
-  .task.high { border-left: 3px solid var(--err); }
-  .task.mid { border-left: 3px solid var(--warn); }
-  .task.low { border-left: 3px solid var(--ok); }
+  .task.high { border-left: 4px solid var(--err); }
+  .task.mid { border-left: 4px solid var(--gold); }
+  .task.low { border-left: 4px solid var(--olive); }
+  .task.overdue { 
+    border-left: 4px solid var(--err); 
+    background: linear-gradient(90deg, #fbeeed 0%, var(--bg) 100%);
+  }
   .t-info { flex: 1; }
-  .t-title { font-weight: 500; margin-bottom: 4px; }
+  .t-title { font-weight: 600; margin-bottom: 4px; font-size: 15px; }
   .t-meta { font-size: 12px; color: var(--muted); }
-  .t-actions { display: flex; gap: 4px; flex-wrap: wrap; }
-  .t-actions button { padding: 6px 10px; font-size: 12px; }
-  .grid { display: grid; gap: 10px; }
+  .t-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .t-actions button { padding: 8px 12px; font-size: 12px; }
+  
+  .grid { display: grid; gap: 12px; }
   .grid-2 { grid-template-columns: 1fr 1fr; }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
-  @media (max-width: 700px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 700px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+  
   .alert {
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin: 10px 0;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: 12px 0;
     font-size: 14px;
-    border-left: 3px solid;
+    border-left: 4px solid;
   }
   .alert.warn { background: #fdf3ee; border-color: var(--warn); color: #7a4a38; }
   .alert.err { background: #fbeeed; border-color: var(--err); color: #7a2e2b; }
   .alert.ok { background: #edf4f0; border-color: var(--ok); color: #3a5a4a; }
-  .alert.info { background: #eef2f5; border-color: #6b8ea5; color: #3a5a6b; }
-  .calendar {
+  .alert.info { 
+    background: linear-gradient(135deg, #e8e2f5 0%, #f0e8f5 100%); 
+    border-color: var(--accent); 
+    color: var(--accent-dark);
+  }
+  
+  .schedule-item {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    transition: all 0.2s;
+  }
+  .schedule-item:hover { transform: translateX(4px); }
+  .schedule-item.meal {
+    background: linear-gradient(135deg, #fdf8ee 0%, #f5eed8 100%);
+    border-color: var(--gold);
+  }
+  .schedule-time {
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 60px;
+    color: var(--accent);
+  }
+  .schedule-name { flex: 1; font-size: 15px; }
+  .schedule-duration {
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--card);
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+  
+  .label { 
+    font-size: 12px; 
+    color: var(--accent-light); 
+    display: block; 
+    margin-bottom: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .days-left {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .days-left.soon { background: var(--err); color: white; }
+  .days-left.mid { background: var(--warn); color: white; }
+  .days-left.ok { background: var(--olive); color: white; }
+  
+  .note {
+    background: #fdf8ee;
+    border: 2px solid #e8dfc4;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .note-title { font-weight: 600; margin-bottom: 6px; }
+  .note-body { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
+  .note-meta { font-size: 11px; color: var(--muted); margin-top: 8px; }
+  
+  .habit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .habit-dots { display: flex; gap: 4px; }
+  .habit-dot {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--border);
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--card);
+    transition: all 0.2s;
+  }
+  .habit-dot.done { background: var(--olive); }
+  .habit-dot:hover { transform: scale(1.1); }
+  
+  .routine-block {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .routine-block h4 { 
+    font-size: 14px; 
+    margin-bottom: 10px; 
+    color: var(--accent-dark);
+    font-weight: 600;
+  }
+  
+  .pomodoro {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-dark) 100%);
+    border-radius: 16px;
+  }
+  .pomodoro-time {
+    font-size: 72px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    margin: 16px 0;
+    color: var(--accent);
+  }
+  .pomodoro-label { 
+    color: var(--muted); 
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  
+  .stat-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    border: 2px solid var(--border);
+  }
+  .stat-card .num { 
+    font-size: 32px; 
+    font-weight: 700; 
+    color: var(--accent);
+  }
+  .stat-card .lbl { 
+    font-size: 12px; 
+    color: var(--muted); 
+    margin-top: 6px;
+  }
+  
+  .fin-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .fin-row.income { border-left: 4px solid var(--ok); }
+  .fin-row.expense { border-left: 4px solid var(--err); }
+  
+  .goal-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 2px solid var(--border);
+  }
+  .goal-title { font-weight: 600; margin-bottom: 8px; }
+  .goal-meta { font-size: 12px; color: var(--muted); }
+  .progress-bar {
+    width: 100%;
+    height: 10px;
+    background: var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+  .progress-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, var(--olive) 0%, var(--accent) 100%);
+    transition: width 0.3s;
+  }
+  
+  .energy-tracker {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 12px;
   }
-  .cal-head { text-align: center; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 0; }
-  .cal-day {
+  .energy-day {
     aspect-ratio: 1;
-    border-radius: 6px;
-    background: var(--bg);
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 12px;
     cursor: pointer;
-    position: relative;
+    transition: all 0.2s;
+    border: 2px solid var(--border);
   }
-  .cal-day.empty { background: transparent; cursor: default; }
-  .cal-day.today { background: var(--text); color: var(--card); font-weight: 700; }
-  .cal-day.has-tasks { background: #e8e2d4; }
-  .cal-day.overload { background: #fbeeed; }
-  .cal-day .dot { position: absolute; bottom: 4px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
-  .note {
-    background: #fdf8ee;
-    border: 1px solid #e8dfc4;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-  }
-  .note-title { font-weight: 500; margin-bottom: 4px; }
-  .note-body { font-size: 13px; color: var(--muted); white-space: pre-wrap; }
-  .note-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
-  .habit {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 12px;
-    background: var(--bg);
-    border-radius: 8px;
-    margin-bottom: 6px;
-  }
-  .habit-dots { display: flex; gap: 3px; }
-  .habit-dot {
-    width: 20px; height: 20px;
-    border-radius: 4px;
-    background: var(--border);
-    cursor: pointer;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--card);
-  }
-  .habit-dot.done { background: var(--accent); }
+  .energy-day:hover { transform: scale(1.05); }
+  .energy-day.high { background: #edf4f0; color: #3a5a4a; border-color: var(--olive); }
+  .energy-day.mid { background: #fdf3ee; color: #7a4a38; border-color: var(--warn); }
+  .energy-day.low { background: #fbeeed; color: #7a2e2b; border-color: var(--err); }
+  
   .chip {
     display: inline-block;
-    padding: 3px 8px;
+    padding: 4px 10px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     font-size: 11px;
     margin: 2px;
   }
-  .chip.urgent { background: #fbeeed; border-color: var(--err); color: #7a2e2b; }
-  .chip.mid { background: #fdf3ee; border-color: var(--warn); color: #7a4a38; }
-  .chip.low { background: #edf4f0; border-color: var(--ok); color: #3a5a4a; }
-  .routine-block {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 10px;
+  
+  /* Мобильная адаптация */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+    }
+    .main {
+      margin-left: 0;
+    }
+    .layout {
+      flex-direction: column;
+    }
   }
-  .routine-block h4 { font-size: 13px; margin-bottom: 8px; color: var(--accent-dark); }
-  .pomodoro {
-    text-align: center;
-    padding: 30px 20px;
-    background: var(--bg);
-    border-radius: 12px;
-  }
-  .pomodoro-time {
-    font-size: 64px;
-    font-weight: 300;
-    letter-spacing: -2px;
-    margin: 10px 0;
-  }
-  .pomodoro-label { color: var(--muted); margin-bottom: 16px; }
-  .stat-card {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 14px;
-    text-align: center;
-  }
-  .stat-card .num { font-size: 28px; font-weight: 600; color: var(--accent-dark); }
-  .stat-card .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
-  .fin-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 12px;
-    background: var(--bg);
-    border-radius: 8px;
-    margin-bottom: 6px;
-  }
-  .fin-row.income { border-left: 3px solid var(--ok); }
-  .fin-row.expense { border-left: 3px solid var(--err); }
-  .hidden { display: none !important; }
-  .days-left {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-left: 6px;
-  }
-  .days-left.soon { background: #fbeeed; color: #7a2e2b; }
-  .days-left.mid { background: #fdf3ee; color: #7a4a38; }
-  .days-left.ok { background: #edf4f0; color: #3a5a4a; }
-  .search-box {
-    position: relative;
-    margin-bottom: 12px;
-  }
-  .search-box input {
-    width: 100%;
-    padding-left: 36px;
-  }
-  .search-box::before {
-    content: '🔍';
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-  }
-  .filter-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .filter-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 16px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .filter-btn.active {
-    background: var(--text);
-    color: var(--card);
-    border-color: var(--text);
-  }
-  .progress-bar {
-    width: 100%;
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 8px 0;
-  }
-  .progress-bar > div {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.3s;
-  }
-  .goal-card {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 10px;
-  }
-  .goal-title { font-weight: 500; margin-bottom: 6px; }
-  .goal-meta { font-size: 12px; color: var(--muted); }
-  .quick-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .quick-action {
-    padding: 8px 14px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  .quick-action:hover {
-    background: var(--bg);
-    border-color: var(--accent);
-  }
-  .energy-tracker {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    margin-top: 10px;
-  }
-  .energy-day {
-    aspect-ratio: 1;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .energy-day:hover { transform: scale(1.05); }
-  .energy-day.high { background: #edf4f0; color: #3a5a4a; }
-  .energy-day.mid { background: #fdf3ee; color: #7a4a38; }
-  .energy-day.low { background: #fbeeed; color: #7a2e2b; }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <h1>Планировщик</h1>
-  <p>Задача → дедлайн → распределение по дням</p>
-  <div id="sync-status" class="sync-status offline">⏳ Проверка связи с сервером...</div>
-</header>
+<div class="layout">
+
+<!-- ========== БОКОВАЯ ПАНЕЛЬ ========== -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>📅 Планировщик</h1>
+    <p>Умное планирование</p>
+    <div id="sync-status" class="sync-status offline">⏳ Проверка...</div>
+  </div>
+  
+  <div class="nav-section">
+    <div class="nav-title">Основное</div>
+    <div class="nav-item active" data-panel="tasks">
+      <span class="nav-icon">📋</span>
+      <span>Задачи</span>
+    </div>
+    <div class="nav-item" data-panel="schedule">
+      <span class="nav-icon">⏰</span>
+      <span>Расписание</span>
+    </div>
+    <div class="nav-item" data-panel="calendar">
+      <span class="nav-icon">📅</span>
+      <span>Календарь</span>
+    </div>
+  </div>
+  
+  <div class="nav-section">
+    <div class="nav-title">Продуктивность</div>
+    <div class="nav-item" data-panel="brain">
+      <span class="nav-icon">🧠</span>
+      <span>Выгрузить мозг</span>
+    </div>
+    <div class="nav-item" data-panel="focus">
+      <span class="nav-icon">🎯</span>
+      <span>Фокус (Pomodoro)</span>
+    </div>
+    <div class="nav-item" data-panel="habits">
+      <span class="nav-icon">✨</span>
+      <span>Привычки</span>
+    </div>
+    <div class="nav-item" data-panel="energy">
+      <span class="nav-icon">⚡</span>
+      <span>Энергия</span>
+    </div>
+  </div>
+  
+  <div class="nav-section">
+    <div class="nav-title">Организация</div>
+    <div class="nav-item" data-panel="notes">
+      <span class="nav-icon">📝</span>
+      <span>Заметки</span>
+    </div>
+    <div class="nav-item" data-panel="routine">
+      <span class="nav-icon">🍽</span>
+      <span>Режим дня</span>
+    </div>
+    <div class="nav-item" data-panel="goals">
+      <span class="nav-icon">🎯</span>
+      <span>Цели</span>
+    </div>
+    <div class="nav-item" data-panel="finance">
+      <span class="nav-icon">💰</span>
+      <span>Финансы</span>
+    </div>
+  </div>
+  
+  <div class="nav-section">
+    <div class="nav-title">Аналитика</div>
+    <div class="nav-item" data-panel="stats">
+      <span class="nav-icon">📊</span>
+      <span>Статистика</span>
+    </div>
+    <div class="nav-item" data-panel="settings">
+      <span class="nav-icon">⚙️</span>
+      <span>Настройки</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ========== ОСНОВНОЙ КОНТЕНТ ========== -->
+<main class="main">
+<div class="wrap">
 
 <div class="today-banner" id="today-banner"></div>
 
-<div class="quick-actions">
-  <div class="quick-action" onclick="document.querySelector('[data-tab=tasks]').click(); $('t-title').focus();">➕ Новая задача</div>
-  <div class="quick-action" onclick="document.querySelector('[data-tab=brain]').click(); $('brain-text').focus();">🧠 Выгрузить мозг</div>
-  <div class="quick-action" onclick="document.querySelector('[data-tab=focus]').click(); pomoStart();">🎯 Начать фокус</div>
-  <div class="quick-action" onclick="sendTodayToTG();">📲 Отправить в TG</div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" data-tab="tasks">📋 Задачи</button>
-  <button class="tab" data-tab="brain">🧠 Мозг</button>
-  <button class="tab" data-tab="calendar">📅 Календарь</button>
-  <button class="tab" data-tab="notes">📝 Заметки</button>
-  <button class="tab" data-tab="habits">✨ Привычки</button>
-  <button class="tab" data-tab="focus">🎯 Фокус</button>
-  <button class="tab" data-tab="routine">🍽 Режим</button>
-  <button class="tab" data-tab="goals">🎯 Цели</button>
-  <button class="tab" data-tab="energy">⚡ Энергия</button>
-  <button class="tab" data-tab="finance">💰 Финансы</button>
-  <button class="tab" data-tab="stats">📊 Статистика</button>
-  <button class="tab" data-tab="settings">⚙️ Настройки</button>
-</div>
-
 <!-- ЗАДАЧИ -->
 <div class="panel active" id="panel-tasks">
-  <h2>➕ Новая задача</h2>
+  <h2>📋 Задачи</h2>
+  
+  <h3>➕ Новая задача</h3>
   <div class="form-row">
     <input id="t-title" placeholder="Что сделать?" style="flex:2; min-width:200px;">
     <input id="t-hours" type="number" min="0.5" step="0.5" placeholder="Часов" style="width:100px;">
@@ -436,12 +586,6 @@
   <button onclick="addTask()">Добавить задачу</button>
   <div id="load-alerts"></div>
 
-  <div class="search-box">
-    <input id="task-search" placeholder="Поиск задач..." oninput="renderTasks()">
-  </div>
-
-  <div class="filter-row" id="task-filters"></div>
-
   <h3>📌 Сегодня</h3>
   <div id="today-tasks"></div>
 
@@ -452,12 +596,34 @@
   <div id="done-tasks"></div>
 </div>
 
+<!-- РАСПИСАНИЕ -->
+<div class="panel" id="panel-schedule">
+  <h2>⏰ Расписание на сегодня</h2>
+  <div class="form-row">
+    <button class="accent" onclick="loadSchedule(false)">🍳 С завтраком</button>
+    <button class="ghost" onclick="loadSchedule(true)">⏭ Без завтрака</button>
+  </div>
+  <div id="schedule-list"></div>
+</div>
+
+<!-- КАЛЕНДАРЬ -->
+<div class="panel" id="panel-calendar">
+  <h2>📅 Календарь</h2>
+  <div class="form-row">
+    <button class="ghost" onclick="changeMonth(-1)">◀</button>
+    <h3 id="cal-title" style="flex:1; text-align:center; margin:0;"></h3>
+    <button class="ghost" onclick="changeMonth(1)">▶</button>
+  </div>
+  <div id="calendar-grid" style="margin-top:16px;"></div>
+  <div id="day-detail" style="margin-top:16px;"></div>
+</div>
+
 <!-- МОЗГ -->
 <div class="panel" id="panel-brain">
   <h2>🧠 Выгрузи всё</h2>
-  <p style="color:var(--muted); margin-bottom:10px;">Каждая строка → отдельная задача.</p>
+  <p style="color:var(--muted); margin-bottom:12px;">Каждая строка → отдельная задача.</p>
   <textarea id="brain-text" placeholder="Сделать демоэкзамен&#10;Закончить 3 экрана диплома&#10;Футболки IPA"></textarea>
-  <div class="form-row" style="margin-top:10px;">
+  <div class="form-row" style="margin-top:12px;">
     <div style="flex:1;">
       <label class="label">Когда сдать</label>
       <input id="brain-deadline" type="date">
@@ -472,51 +638,6 @@
   <div id="brain-preview"></div>
 </div>
 
-<!-- КАЛЕНДАРЬ -->
-<div class="panel" id="panel-calendar">
-  <h2>📅 Календарь</h2>
-  <div class="form-row">
-    <button class="ghost" onclick="changeMonth(-1)">◀</button>
-    <h3 id="cal-title" style="flex:1; text-align:center; margin:0;"></h3>
-    <button class="ghost" onclick="changeMonth(1)">▶</button>
-  </div>
-  <div class="calendar" id="calendar-grid"></div>
-  <div id="day-detail" style="margin-top:14px;"></div>
-</div>
-
-<!-- ЗАМЕТКИ -->
-<div class="panel" id="panel-notes">
-  <h2>📝 Заметки</h2>
-  <div class="form-row">
-    <input id="n-title" placeholder="Заголовок" style="flex:1;">
-  </div>
-  <textarea id="n-body" placeholder="Текст заметки, идея, инсайт..."></textarea>
-  <div class="form-row" style="margin-top:8px;">
-    <select id="n-tag">
-      <option value="">Без тега</option>
-      <option value="idea">💡 Идея</option>
-      <option value="work">💼 Работа</option>
-      <option value="study">📚 Учёба</option>
-      <option value="personal">🏠 Личное</option>
-    </select>
-    <button onclick="addNote()">Сохранить заметку</button>
-  </div>
-  <h3>Все заметки</h3>
-  <div id="notes-list"></div>
-</div>
-
-<!-- ПРИВЫЧКИ -->
-<div class="panel" id="panel-habits">
-  <h2>✨ Трекер привычек</h2>
-  <p style="color:var(--muted); margin-bottom:10px;">Отмечай каждый день. Последние 7 дней.</p>
-  <div id="habits-list"></div>
-  <h3>➕ Новая привычка</h3>
-  <div class="form-row">
-    <input id="h-name" placeholder="Например: Вода 2л, Чтение, Спорт">
-    <button onclick="addHabit()">Добавить</button>
-  </div>
-</div>
-
 <!-- ФОКУС -->
 <div class="panel" id="panel-focus">
   <h2>🎯 Pomodoro-таймер</h2>
@@ -528,7 +649,7 @@
       <button class="ghost" onclick="pomoPause()">⏸ Пауза</button>
       <button class="ghost" onclick="pomoReset()">↺ Сброс</button>
     </div>
-    <div class="form-row" style="justify-content:center; margin-top:10px;">
+    <div class="form-row" style="justify-content:center; margin-top:12px;">
       <button class="ghost" onclick="pomoSet(25)">25 мин</button>
       <button class="ghost" onclick="pomoSet(50)">50 мин</button>
       <button class="ghost" onclick="pomoSet(5, 'Перерыв')">5 мин отдых</button>
@@ -542,10 +663,51 @@
   </div>
 </div>
 
+<!-- ПРИВЫЧКИ -->
+<div class="panel" id="panel-habits">
+  <h2>✨ Трекер привычек</h2>
+  <p style="color:var(--muted); margin-bottom:12px;">Отмечай каждый день. Последние 7 дней.</p>
+  <div id="habits-list"></div>
+  <h3>➕ Новая привычка</h3>
+  <div class="form-row">
+    <input id="h-name" placeholder="Например: Вода 2л, Чтение, Спорт">
+    <button onclick="addHabit()">Добавить</button>
+  </div>
+</div>
+
+<!-- ЭНЕРГИЯ -->
+<div class="panel" id="panel-energy">
+  <h2>⚡ Трекер энергии</h2>
+  <p style="color:var(--muted); margin-bottom:12px;">Отмечай уровень энергии каждый день.</p>
+  <div class="energy-tracker" id="energy-grid"></div>
+  <div id="energy-stats" style="margin-top:16px;"></div>
+</div>
+
+<!-- ЗАМЕТКИ -->
+<div class="panel" id="panel-notes">
+  <h2>📝 Заметки</h2>
+  <div class="form-row">
+    <input id="n-title" placeholder="Заголовок" style="flex:1;">
+  </div>
+  <textarea id="n-body" placeholder="Текст заметки, идея, инсайт..."></textarea>
+  <div class="form-row" style="margin-top:10px;">
+    <select id="n-tag">
+      <option value="">Без тега</option>
+      <option value="idea">💡 Идея</option>
+      <option value="work">💼 Работа</option>
+      <option value="study">📚 Учёба</option>
+      <option value="personal">🏠 Личное</option>
+    </select>
+    <button onclick="addNote()">Сохранить заметку</button>
+  </div>
+  <h3>Все заметки</h3>
+  <div id="notes-list"></div>
+</div>
+
 <!-- РЕЖИМ -->
 <div class="panel" id="panel-routine">
   <h2>🍽 Режим дня</h2>
-  <p style="color:var(--muted); margin-bottom:10px;">Распределение дня: учёба, еда, отдых, задачи.</p>
+  <p style="color:var(--muted); margin-bottom:12px;">Распределение дня: учёба, еда, отдых, задачи.</p>
   <div class="grid grid-2">
     <div class="routine-block">
       <h4>🌅 Утро</h4>
@@ -582,23 +744,15 @@
 <!-- ЦЕЛИ -->
 <div class="panel" id="panel-goals">
   <h2>🎯 Цели</h2>
-  <p style="color:var(--muted); margin-bottom:10px;">Установи цели на неделю/месяц и отслеживай прогресс.</p>
+  <p style="color:var(--muted); margin-bottom:12px;">Установи цели и отслеживай прогресс.</p>
   <div id="goals-list"></div>
   <h3>➕ Новая цель</h3>
   <div class="form-row">
     <input id="g-title" placeholder="Например: Прочитать 3 книги" style="flex:2;">
-    <input id="g-target" type="number" placeholder="Цель (число)" style="width:120px;">
+    <input id="g-target" type="number" placeholder="Цель" style="width:120px;">
     <input id="g-deadline" type="date" style="width:150px;">
     <button onclick="addGoal()">+</button>
   </div>
-</div>
-
-<!-- ЭНЕРГИЯ -->
-<div class="panel" id="panel-energy">
-  <h2>⚡ Трекер энергии</h2>
-  <p style="color:var(--muted); margin-bottom:10px;">Отмечай уровень энергии каждый день. Поможет понять лучшие часы для работы.</p>
-  <div class="energy-tracker" id="energy-grid"></div>
-  <div id="energy-stats" style="margin-top:14px;"></div>
 </div>
 
 <!-- ФИНАНСЫ -->
@@ -607,7 +761,7 @@
   <div class="grid grid-2">
     <div>
       <h3>➕ Доход</h3>
-      <input id="fin-in-title" placeholder="Источник" style="width:100%; margin-bottom:6px;">
+      <input id="fin-in-title" placeholder="Источник" style="width:100%; margin-bottom:8px;">
       <div class="form-row">
         <input id="fin-in-amount" type="number" placeholder="Сумма">
         <input id="fin-in-date" type="date">
@@ -616,7 +770,7 @@
     </div>
     <div>
       <h3>➕ Расход</h3>
-      <input id="fin-ex-title" placeholder="Категория" style="width:100%; margin-bottom:6px;">
+      <input id="fin-ex-title" placeholder="Категория" style="width:100%; margin-bottom:8px;">
       <div class="form-row">
         <input id="fin-ex-amount" type="number" placeholder="Сумма">
         <input id="fin-ex-date" type="date">
@@ -624,7 +778,7 @@
       </div>
     </div>
   </div>
-  <div id="fin-summary" style="margin-top:14px;"></div>
+  <div id="fin-summary" style="margin-top:16px;"></div>
   <h3>📊 История</h3>
   <div id="fin-list"></div>
 </div>
@@ -652,8 +806,6 @@
   </div>
   <h3>📈 По проектам</h3>
   <div id="stats-projects"></div>
-  <h3>📅 По дням недели</h3>
-  <div id="stats-weekdays"></div>
 </div>
 
 <!-- НАСТРОЙКИ -->
@@ -661,22 +813,28 @@
   <h2>⚙️ Настройки</h2>
   <h3>🕐 Рабочий день</h3>
   <div class="grid grid-2">
-    <div><label class="label">Подъём</label><input id="s-wake" type="time"></div>
-    <div><label class="label">Отбой</label><input id="s-sleep" type="time"></div>
-    <div><label class="label">Учёба (ч/день)</label><input id="s-study" type="number" min="0" step="0.5"></div>
-    <div><label class="label">Работа (ч/день)</label><input id="s-work" type="number" min="0" step="0.5"></div>
-    <div><label class="label">Макс задач в день (ч)</label><input id="s-max" type="number" min="1" step="0.5"></div>
-    <div><label class="label">Напоминание за (мин)</label><input id="s-remind" type="number" min="5" step="5"></div>
+    <div>
+      <label class="label">Начало рабочего дня</label>
+      <input id="s-workstart" type="time">
+    </div>
+    <div>
+      <label class="label">Конец рабочего дня</label>
+      <input id="s-workend" type="time">
+    </div>
+    <div>
+      <label class="label">Макс задач в день (ч)</label>
+      <input id="s-max" type="number" min="1" step="0.5">
+    </div>
   </div>
-  <button onclick="saveSettings()" style="margin-top:10px;">Сохранить</button>
+  <button onclick="saveSettings()" style="margin-top:12px;">Сохранить</button>
 
   <h3>📲 Telegram</h3>
   <div class="alert info">
-    <b>Как подключить:</b><br>
-    1. @BotFather → /newbot → получишь токен<br>
-    2. @userinfobot → получишь Chat ID<br>
-    3. Напиши своему боту /start<br>
-    4. Вставь данные ниже
+    <b>Команды бота:</b><br>
+    /встала — начать день (с завтраком)<br>
+    /без_завтрака — начать день (без завтрака)<br>
+    /расписание — показать расписание<br>
+    /задачи — список задач на сегодня
   </div>
   <div class="form-row">
     <input id="s-tg-token" placeholder="Bot Token" style="flex:2;">
@@ -685,35 +843,21 @@
   <div class="form-row">
     <button onclick="saveTG()">Сохранить</button>
     <button class="ghost" onclick="testTG()">Тест</button>
-    <button class="ghost" onclick="requestNotif()">🔔 Уведомления</button>
   </div>
   <div id="tg-status"></div>
-
-  <h3>🖥 Python-сервер (24/7 уведомления)</h3>
-  <div class="alert info">
-    Сервер работает на Railway: <b>https://pp-planner-production.up.railway.app/</b><br>
-    Уведомления приходят автоматически в 08:00, 09:00, 21:00.
-  </div>
-
-  <h3>🗄 Данные</h3>
-  <div class="form-row">
-    <button class="ghost" onclick="exportData()">📥 Экспорт</button>
-    <button class="ghost" onclick="document.getElementById('import-file').click()">📤 Импорт</button>
-    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-    <button class="danger" onclick="resetAll()">🗑 Сброс</button>
-  </div>
 </div>
+
+</div>
+</main>
 
 </div>
 
 <script>
-// ========== КОНФИГУРАЦИЯ СЕРВЕРА ==========
 const SERVER_URL = 'https://pp-planner-production.up.railway.app';
 
-// ========== ХРАНИЛИЩЕ ==========
 const DB = {
   load() {
-    const d = JSON.parse(localStorage.getItem('planner_v4') || '{}');
+    const d = JSON.parse(localStorage.getItem('planner_v6') || '{}');
     return {
       tasks: d.tasks || [],
       projects: d.projects || [
@@ -736,20 +880,21 @@ const DB = {
       goals: d.goals || [],
       energy: d.energy || {},
       settings: d.settings || {
-        wake:'08:00', sleep:'23:00', study:4, work:2, max:6, remind:30,
-        tgToken:'', tgChat:''
+        workStart: '08:00',
+        workEnd: '22:00',
+        max: 6,
+        tgToken: '',
+        tgChat: ''
       },
-      pomo: d.pomo || { done:0, mins:0, date:'' },
+      pomo: d.pomo || { done:0, mins:0, tasks:0, date:'' },
       calMonth: d.calMonth ?? new Date().getMonth(),
-      calYear: d.calYear ?? new Date().getFullYear(),
-      filters: d.filters || { project: 'all', priority: 'all' }
+      calYear: d.calYear ?? new Date().getFullYear()
     };
   },
-  save(d) { localStorage.setItem('planner_v4', JSON.stringify(d)); }
+  save(d) { localStorage.setItem('planner_v6', JSON.stringify(d)); }
 };
 let state = DB.load();
 
-// ========== УТИЛИТЫ ==========
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const fmtDate = d => {
@@ -764,24 +909,17 @@ const daysBetween = (a,b) => Math.round((parseDate(b)-parseDate(a))/86400000);
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const WEEKDAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 
-function hoursOnDay(dateStr) {
-  return state.tasks
-    .filter(t => t.scheduledDate === dateStr && !t.done)
-    .reduce((s,t) => s + Number(t.hours||0), 0);
-}
-
-// ========== ВКЛАДКИ ==========
-document.querySelectorAll('.tab').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+// Навигация
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    $('panel-' + b.dataset.tab).classList.add('active');
+    item.classList.add('active');
+    $('panel-' + item.dataset.panel).classList.add('active');
     renderAll();
   };
 });
 
-// ========== БАННЕР СЕГОДНЯ ==========
 function renderBanner() {
   const d = new Date();
   const opts = { weekday:'long', day:'numeric', month:'long' };
@@ -789,10 +927,8 @@ function renderBanner() {
   const td = today();
   const tasksToday = state.tasks.filter(t => !t.done && t.scheduledDate === td).length;
   const overdue = state.tasks.filter(t => !t.done && t.deadline < td).length;
-  const urgent = state.tasks.filter(t => !t.done && daysBetween(td, t.deadline) <= 2 && daysBetween(td, t.deadline) >= 0).length;
   let warn = '';
-  if (overdue) warn += ` <span class="chip urgent">🚨 Просрочено: ${overdue}</span>`;
-  if (urgent) warn += ` <span class="chip mid">⏰ Скоро: ${urgent}</span>`;
+  if (overdue) warn += ` ⚠️ Просрочено: ${overdue}`;
   $('today-banner').innerHTML = `
     <div>
       <b>${dateStr.charAt(0).toUpperCase()+dateStr.slice(1)}</b><br>
@@ -804,7 +940,6 @@ function renderBanner() {
   `;
 }
 
-// ========== ЗАДАЧИ ==========
 function addTask() {
   const title = $('t-title').value.trim();
   const hours = parseFloat($('t-hours').value);
@@ -812,46 +947,20 @@ function addTask() {
   const start = $('t-start').value || today();
   if (!title || !hours || !deadline) { alert('Заполни название, часы и дедлайн'); return; }
   if (deadline < start) { alert('Дедлайн не может быть раньше даты начала'); return; }
-  if (deadline < today()) {
-    if (!confirm('Дедлайн уже прошёл. Всё равно добавить?')) return;
-  }
+  
   const task = {
     id: uid(), title, hours, deadline, start,
     priority: $('t-priority').value,
     projectId: $('t-project').value,
     created: today(),
-    scheduledDate: null,
+    scheduledDate: start,
     done: false,
     movedCount: 0
   };
   state.tasks.push(task);
-  scheduleTasks();
   DB.save(state);
   $('t-title').value = ''; $('t-hours').value = '';
   renderAll();
-}
-
-function scheduleTasks() {
-  const active = state.tasks.filter(t => !t.done);
-  const todayDate = parseDate(today());
-  active.forEach(t => {
-    const startDate = parseDate(t.start || today());
-    const effectiveStart = startDate > todayDate ? startDate : todayDate;
-    const dl = parseDate(t.deadline);
-    if (t.scheduledDate && parseDate(t.scheduledDate) >= effectiveStart && parseDate(t.scheduledDate) <= dl) return;
-    let d = new Date(effectiveStart);
-    let placed = false;
-    while (d <= dl) {
-      const ds = fmtDate(d);
-      if (hoursOnDay(ds) + Number(t.hours) <= state.settings.max) {
-        t.scheduledDate = ds;
-        placed = true;
-        break;
-      }
-      d.setDate(d.getDate() + 1);
-    }
-    if (!placed) t.scheduledDate = t.deadline;
-  });
 }
 
 function toggleDone(id) {
@@ -866,16 +975,6 @@ function toggleDone(id) {
   renderAll();
 }
 
-function postpone(id) {
-  const t = state.tasks.find(x => x.id === id);
-  const d = parseDate(t.scheduledDate || today());
-  d.setDate(d.getDate() + 1);
-  t.scheduledDate = fmtDate(d);
-  t.movedCount = (t.movedCount||0) + 1;
-  DB.save(state);
-  renderAll();
-}
-
 function deleteTask(id) {
   if (!confirm('Удалить задачу?')) return;
   state.tasks = state.tasks.filter(t => t.id !== id);
@@ -886,9 +985,9 @@ function deleteTask(id) {
 function renderTask(t) {
   const proj = state.projects.find(p => p.id === t.projectId);
   const td = today();
-  const dl = parseDate(t.deadline);
-  const td2 = parseDate(td);
-  const daysLeft = Math.ceil((dl - td2)/86400000);
+  const daysLeft = daysBetween(td, t.deadline);
+  const isOverdue = daysLeft < 0 && !t.done;
+  
   let daysChip = '';
   if (!t.done) {
     if (daysLeft < 0) daysChip = `<span class="days-left soon">Просрочено ${-daysLeft}д</span>`;
@@ -897,19 +996,20 @@ function renderTask(t) {
     else if (daysLeft <= 3) daysChip = `<span class="days-left mid">${daysLeft}д</span>`;
     else daysChip = `<span class="days-left ok">${daysLeft}д</span>`;
   }
+  
+  const taskClass = t.done ? 'done' : isOverdue ? 'overdue' : t.priority;
+  
   return `
-    <div class="task ${t.done?'done':''} ${t.priority}">
+    <div class="task ${taskClass}">
       <div class="t-info">
         <div class="t-title">${t.title} ${daysChip}</div>
         <div class="t-meta">
           ${proj ? proj.emoji+' '+proj.name+' • ' : ''}${t.hours}ч • 
-          Сдать: ${t.deadline} • В плане: ${t.scheduledDate||'—'}
-          ${t.movedCount>0?` • Переносов: ${t.movedCount}`:''}
+          Сдать: ${t.deadline}
         </div>
       </div>
       <div class="t-actions">
         <button class="ghost" onclick="toggleDone('${t.id}')">${t.done?'↺':'✓'}</button>
-        ${!t.done?`<button class="ghost" onclick="postpone('${t.id}')">⏭</button>`:''}
         <button class="danger" onclick="deleteTask('${t.id}')">🗑</button>
       </div>
     </div>
@@ -918,57 +1018,96 @@ function renderTask(t) {
 
 function renderTasks() {
   const td = today();
-  const search = ($('task-search')?.value || '').toLowerCase();
-  
-  // Фильтры
-  let filtered = state.tasks;
-  if (search) {
-    filtered = filtered.filter(t => t.title.toLowerCase().includes(search));
-  }
-  if (state.filters.project !== 'all') {
-    filtered = filtered.filter(t => t.projectId === state.filters.project);
-  }
-  if (state.filters.priority !== 'all') {
-    filtered = filtered.filter(t => t.priority === state.filters.priority);
-  }
-
-  const todayTasks = filtered.filter(t => !t.done && t.scheduledDate === td);
-  const future = filtered.filter(t => !t.done && t.scheduledDate && t.scheduledDate > td).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate));
-  const done = filtered.filter(t => t.done).slice(-10).reverse();
+  const todayTasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
+  const future = state.tasks.filter(t => !t.done && t.scheduledDate > td).sort((a,b)=>a.scheduledDate.localeCompare(b.scheduledDate));
+  const done = state.tasks.filter(t => t.done).slice(-10).reverse();
 
   $('today-tasks').innerHTML = todayTasks.length ? todayTasks.map(renderTask).join('') : '<p style="color:var(--muted)">На сегодня ничего 🌿</p>';
   $('future-tasks').innerHTML = future.length ? future.map(renderTask).join('') : '<p style="color:var(--muted)">Пусто</p>';
   $('done-tasks').innerHTML = done.length ? done.map(renderTask).join('') : '<p style="color:var(--muted)">Пока нет</p>';
-
-  let alerts = '';
-  filtered.filter(t=>!t.done).forEach(t => {
-    const daysLeft = daysBetween(td, t.deadline);
-    if (daysLeft < 0) alerts += `<div class="alert err">🚨 Просрочено: <b>${t.title}</b> (${t.deadline})</div>`;
-    else if (daysLeft === 0) alerts += `<div class="alert warn">⏰ Сдать сегодня: <b>${t.title}</b></div>`;
-    else if (daysLeft === 1) alerts += `<div class="alert warn">⏰ Завтра сдать: <b>${t.title}</b></div>`;
-  });
-  $('load-alerts').innerHTML = alerts;
-
-  // Рендер фильтров
-  let filtersHTML = '<button class="filter-btn ' + (state.filters.project==='all'?'active':'') + '" onclick="setFilter(\'project\',\'all\')">Все проекты</button>';
-  state.projects.forEach(p => {
-    filtersHTML += `<button class="filter-btn ${state.filters.project===p.id?'active':''}" onclick="setFilter('project','${p.id}')">${p.emoji} ${p.name}</button>`;
-  });
-  filtersHTML += '<br>';
-  filtersHTML += `<button class="filter-btn ${state.filters.priority==='all'?'active':''}" onclick="setFilter('priority','all')">Все приоритеты</button>`;
-  filtersHTML += `<button class="filter-btn ${state.filters.priority==='high'?'active':''}" onclick="setFilter('priority','high')">🔥 Важно</button>`;
-  filtersHTML += `<button class="filter-btn ${state.filters.priority==='mid'?'active':''}" onclick="setFilter('priority','mid')">🟡 Средне</button>`;
-  filtersHTML += `<button class="filter-btn ${state.filters.priority==='low'?'active':''}" onclick="setFilter('priority','low')">🟢 Позже</button>`;
-  $('task-filters').innerHTML = filtersHTML;
 }
 
-function setFilter(type, value) {
-  state.filters[type] = value;
+async function loadSchedule(skipBreakfast) {
+  try {
+    const r = await fetch(SERVER_URL + '/api/schedule?skip_breakfast=' + skipBreakfast);
+    if (r.ok) {
+      const data = await r.json();
+      renderSchedule(data.schedule);
+    }
+  } catch(e) {
+    $('schedule-list').innerHTML = '<div class="alert err">Не удалось загрузить расписание</div>';
+  }
+}
+
+function renderSchedule(schedule) {
+  if (!schedule || !schedule.length) {
+    $('schedule-list').innerHTML = '<p style="color:var(--muted)">На сегодня задач нет 🌿</p>';
+    return;
+  }
+  
+  let html = '';
+  schedule.forEach(item => {
+    const isMeal = item.type === 'meal';
+    const duration = item.duration >= 60 ? `${item.duration/60}ч` : `${item.duration} мин`;
+    
+    html += `
+      <div class="schedule-item ${isMeal ? 'meal' : ''}">
+        <div class="schedule-time">${item.start}</div>
+        <div class="schedule-name">${item.name}</div>
+        <div class="schedule-duration">${duration}</div>
+      </div>
+    `;
+  });
+  
+  $('schedule-list').innerHTML = html;
+}
+
+function changeMonth(d) {
+  state.calMonth += d;
+  if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
+  if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
   DB.save(state);
-  renderTasks();
+  renderCalendar();
 }
 
-// ========== МОЗГ ==========
+function renderCalendar() {
+  $('cal-title').textContent = `${MONTHS[state.calMonth]} ${state.calYear}`;
+  const first = new Date(state.calYear, state.calMonth, 1);
+  const last = new Date(state.calYear, state.calMonth+1, 0);
+  let startDay = first.getDay(); if (startDay===0) startDay=7; startDay--;
+  
+  let html = '<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;">';
+  html += WEEKDAYS.map(w=>`<div style="text-align:center; font-size:11px; font-weight:600; color:var(--muted); padding:6px 0;">${w}</div>`).join('');
+  
+  for (let i=0;i<startDay;i++) html += '<div></div>';
+  
+  const td = today();
+  for (let d=1; d<=last.getDate(); d++) {
+    const dateObj = new Date(state.calYear, state.calMonth, d);
+    const ds = fmtDate(dateObj);
+    const tasksCount = state.tasks.filter(t => t.scheduledDate === ds && !t.done).length;
+    
+    let bg = 'var(--bg)';
+    let color = 'var(--text)';
+    if (ds === td) { bg = 'var(--accent)'; color = 'white'; }
+    else if (tasksCount > 0) { bg = 'var(--bg-dark)'; }
+    
+    html += `<div style="aspect-ratio:1; background:${bg}; color:${color}; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; font-weight:${ds===td?'700':'400'};" onclick="showDay('${ds}')">${d}</div>`;
+  }
+  html += '</div>';
+  
+  $('calendar-grid').innerHTML = html;
+}
+
+function showDay(ds) {
+  const tasks = state.tasks.filter(t => t.scheduledDate === ds);
+  const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
+  let html = `<div class="alert info"><b>${ds}</b> • Задач: ${tasks.length} • ${h}ч</div>`;
+  if (tasks.length) html += tasks.map(renderTask).join('');
+  else html += '<p style="color:var(--muted)">Задач нет</p>';
+  $('day-detail').innerHTML = html;
+}
+
 function parseBrain() {
   const text = $('brain-text').value.trim();
   if (!text) return;
@@ -984,153 +1123,33 @@ function parseBrain() {
   window._brainDL = deadline;
   window._brainPr = priority;
 }
+
 function confirmBrain() {
   const td = today();
   window._brainLines.forEach(l => {
     state.tasks.push({
       id: uid(), title: l, hours: 2, deadline: window._brainDL, start: td,
       priority: window._brainPr, projectId: state.projects[0].id,
-      created: td, scheduledDate: null, done: false, movedCount: 0
+      created: td, scheduledDate: td, done: false, movedCount: 0
     });
   });
-  scheduleTasks();
   DB.save(state);
   $('brain-text').value = '';
   $('brain-preview').innerHTML = '<div class="alert ok">✅ Готово!</div>';
   renderAll();
 }
 
-// ========== КАЛЕНДАРЬ ==========
-function changeMonth(d) {
-  state.calMonth += d;
-  if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
-  if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
-  DB.save(state);
-  renderCalendar();
-}
-function renderCalendar() {
-  $('cal-title').textContent = `${MONTHS[state.calMonth]} ${state.calYear}`;
-  const first = new Date(state.calYear, state.calMonth, 1);
-  const last = new Date(state.calYear, state.calMonth+1, 0);
-  let startDay = first.getDay(); if (startDay===0) startDay=7; startDay--;
-  let html = WEEKDAYS.map(w=>`<div class="cal-head">${w}</div>`).join('');
-  for (let i=0;i<startDay;i++) html += '<div class="cal-day empty"></div>';
-  const td = today();
-  for (let d=1; d<=last.getDate(); d++) {
-    const dateObj = new Date(state.calYear, state.calMonth, d);
-    const ds = fmtDate(dateObj);
-    const h = hoursOnDay(ds);
-    const cls = [];
-    if (ds === td) cls.push('today');
-    if (h > 0) cls.push('has-tasks');
-    if (h > state.settings.max) cls.push('overload');
-    html += `<div class="cal-day ${cls.join(' ')}" onclick="showDay('${ds}')">
-      ${d}${h>0?`<div class="dot"></div>`:''}
-    </div>`;
-  }
-  $('calendar-grid').innerHTML = html;
-}
-function showDay(ds) {
-  const tasks = state.tasks.filter(t => t.scheduledDate === ds);
-  const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
-  let html = `<div class="alert info"><b>${ds}</b> • Загрузка: ${h}ч из ${state.settings.max}ч</div>`;
-  if (tasks.length) html += tasks.map(renderTask).join('');
-  else html += '<p style="color:var(--muted)">Задач нет</p>';
-  $('day-detail').innerHTML = html;
-}
-
-// ========== ЗАМЕТКИ ==========
-function addNote() {
-  const title = $('n-title').value.trim();
-  const body = $('n-body').value.trim();
-  if (!title && !body) return;
-  state.notes.unshift({
-    id: uid(), title, body, tag: $('n-tag').value,
-    created: new Date().toISOString()
-  });
-  $('n-title').value = ''; $('n-body').value = '';
-  DB.save(state);
-  renderNotes();
-}
-function deleteNote(id) {
-  state.notes = state.notes.filter(n => n.id !== id);
-  DB.save(state);
-  renderNotes();
-}
-function renderNotes() {
-  const tagNames = {idea:'💡 Идея', work:'💼 Работа', study:'📚 Учёба', personal:'🏠 Личное'};
-  $('notes-list').innerHTML = state.notes.length ? state.notes.map(n => `
-    <div class="note">
-      <div class="note-title">${n.title||'(без заголовка)'} ${n.tag?`<span class="chip">${tagNames[n.tag]||n.tag}</span>`:''}</div>
-      <div class="note-body">${n.body||''}</div>
-      <div class="note-meta">${new Date(n.created).toLocaleString('ru-RU')} 
-        <button class="ghost" style="padding:2px 8px; font-size:11px; margin-left:6px;" onclick="deleteNote('${n.id}')">🗑</button>
-      </div>
-    </div>
-  `).join('') : '<p style="color:var(--muted)">Нет заметок</p>';
-}
-
-// ========== ПРИВЫЧКИ ==========
-function addHabit() {
-  const name = $('h-name').value.trim();
-  if (!name) return;
-  state.habits.push({id: uid(), name, log:{}});
-  $('h-name').value = '';
-  DB.save(state);
-  renderHabits();
-}
-function toggleHabit(hid, day) {
-  const h = state.habits.find(x => x.id === hid);
-  h.log[day] = !h.log[day];
-  DB.save(state);
-  renderHabits();
-}
-function deleteHabit(id) {
-  state.habits = state.habits.filter(h => h.id !== id);
-  DB.save(state);
-  renderHabits();
-}
-function renderHabits() {
-  const days = [];
-  for (let i=6; i>=0; i--) {
-    const d = new Date(); d.setDate(d.getDate()-i);
-    days.push(fmtDate(d));
-  }
-  const dayNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  let head = '<div style="display:flex; gap:3px; margin-bottom:6px; padding-left: 150px;">';
-  days.forEach(d => {
-    const dn = dayNames[parseDate(d).getDay()];
-    head += `<div style="width:20px; text-align:center; font-size:10px; color:var(--muted);">${dn}</div>`;
-  });
-  head += '</div>';
-  let html = head;
-  state.habits.forEach(h => {
-    html += `<div class="habit">
-      <div style="flex:1; min-width:150px;">
-        <b>${h.name}</b>
-        <button class="ghost" style="padding:2px 6px; font-size:10px; margin-left:6px;" onclick="deleteHabit('${h.id}')">🗑</button>
-      </div>
-      <div class="habit-dots">`;
-    days.forEach(d => {
-      const done = h.log[d];
-      const short = d.slice(8);
-      html += `<div class="habit-dot ${done?'done':''}" onclick="toggleHabit('${h.id}','${d}')" title="${d}">${short}</div>`;
-    });
-    html += `</div></div>`;
-  });
-  $('habits-list').innerHTML = html || '<p style="color:var(--muted)">Добавь первую привычку</p>';
-}
-
-// ========== POMODORO ==========
 let pomoInterval = null;
 let pomoSeconds = 25*60;
 let pomoMode = 'Фокус';
+
 function pomoSet(min, label) {
   pomoSeconds = min*60;
   pomoMode = label || 'Фокус';
   clearInterval(pomoInterval);
   updatePomoUI();
 }
+
 function updatePomoUI() {
   const m = Math.floor(pomoSeconds/60);
   const s = pomoSeconds%60;
@@ -1141,6 +1160,7 @@ function updatePomoUI() {
   $('pomo-mins').textContent = state.pomo.mins||0;
   $('pomo-tasks').textContent = state.pomo.tasks||0;
 }
+
 function pomoStart() {
   if (pomoInterval) return;
   const startSec = pomoSeconds;
@@ -1154,10 +1174,9 @@ function pomoStart() {
         state.pomo.mins = (state.pomo.mins||0) + Math.round(startSec/60);
         state.pomo.date = today();
         DB.save(state);
-        notify('Pomodoro', 'Сессия завершена! Отдых 5 минут');
-        sendTG('🎯 Pomodoro завершён. Отдыхай 5 минут 🌿');
+        alert('🎯 Pomodoro завершён! Отдыхай 5 минут');
       } else {
-        notify('Pomodoro', 'Перерыв окончен. Возвращаемся к работе!');
+        alert('Перерыв окончен. Возвращаемся к работе!');
       }
       pomoSeconds = 25*60;
       pomoMode = 'Фокус';
@@ -1165,86 +1184,69 @@ function pomoStart() {
     updatePomoUI();
   }, 1000);
 }
+
 function pomoPause() { clearInterval(pomoInterval); pomoInterval = null; }
 function pomoReset() { pomoPause(); pomoSeconds = 25*60; pomoMode='Фокус'; updatePomoUI(); }
 
-// ========== РЕЖИМ ==========
-function addRoutine() {
-  const name = $('rb-name').value.trim();
-  const time = $('rb-time').value;
-  const dur = parseInt($('rb-dur').value);
-  const slot = $('rb-slot').value;
-  if (!name || !time || !dur) return;
-  state.routine.push({id: uid(), name, time, dur, slot});
-  $('rb-name').value=''; $('rb-time').value=''; $('rb-dur').value='';
+function addHabit() {
+  const name = $('h-name').value.trim();
+  if (!name) return;
+  state.habits.push({id: uid(), name, log:{}});
+  $('h-name').value = '';
   DB.save(state);
-  renderRoutine();
+  renderHabits();
 }
-function deleteRoutine(id) {
-  state.routine = state.routine.filter(r => r.id !== id);
+
+function toggleHabit(hid, day) {
+  const h = state.habits.find(x => x.id === hid);
+  h.log[day] = !h.log[day];
   DB.save(state);
-  renderRoutine();
+  renderHabits();
 }
-function renderRoutine() {
-  ['morning','day','evening','night'].forEach(slot => {
-    const items = state.routine.filter(r => r.slot === slot).sort((a,b)=>a.time.localeCompare(b.time));
-    const id = slot === 'morning' ? 'r-morning' : slot === 'day' ? 'r-day' : slot === 'evening' ? 'r-evening' : 'r-night';
-    $(id).innerHTML = items.length ? items.map(r => `
-      <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border);">
-        <span><b>${r.time}</b> ${r.name} <small style="color:var(--muted)">(${r.dur} мин)</small></span>
-        <button class="ghost" style="padding:2px 6px; font-size:10px;" onclick="deleteRoutine('${r.id}')">🗑</button>
-      </div>
-    `).join('') : '<small style="color:var(--muted)">Пусто</small>';
+
+function deleteHabit(id) {
+  state.habits = state.habits.filter(h => h.id !== id);
+  DB.save(state);
+  renderHabits();
+}
+
+function renderHabits() {
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    days.push(fmtDate(d));
+  }
+  const dayNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  let head = '<div style="display:flex; gap:4px; margin-bottom:8px; padding-left:150px;">';
+  days.forEach(d => {
+    const dn = dayNames[parseDate(d).getDay()];
+    head += `<div style="width:24px; text-align:center; font-size:10px; color:var(--muted);">${dn}</div>`;
   });
-}
-
-// ========== ЦЕЛИ ==========
-function addGoal() {
-  const title = $('g-title').value.trim();
-  const target = parseFloat($('g-target').value);
-  const deadline = $('g-deadline').value;
-  if (!title || !target || !deadline) { alert('Заполни все поля'); return; }
-  state.goals.push({id: uid(), title, target, current: 0, deadline, created: today()});
-  $('g-title').value = ''; $('g-target').value = ''; $('g-deadline').value = '';
-  DB.save(state);
-  renderGoals();
-}
-function updateGoal(id, delta) {
-  const g = state.goals.find(x => x.id === id);
-  g.current = Math.max(0, Math.min(g.target, g.current + delta));
-  DB.save(state);
-  renderGoals();
-}
-function deleteGoal(id) {
-  state.goals = state.goals.filter(g => g.id !== id);
-  DB.save(state);
-  renderGoals();
-}
-function renderGoals() {
-  $('goals-list').innerHTML = state.goals.length ? state.goals.map(g => {
-    const pct = Math.round((g.current / g.target) * 100);
-    const daysLeft = daysBetween(today(), g.deadline);
-    return `
-      <div class="goal-card">
-        <div class="goal-title">${g.title}</div>
-        <div class="goal-meta">${g.current} / ${g.target} • Осталось ${daysLeft} дн.</div>
-        <div class="progress-bar"><div style="width:${pct}%"></div></div>
-        <div style="display:flex; gap:6px; margin-top:8px;">
-          <button class="ghost" onclick="updateGoal('${g.id}', -1)">-1</button>
-          <button class="ghost" onclick="updateGoal('${g.id}', 1)">+1</button>
-          <button class="danger" onclick="deleteGoal('${g.id}')">🗑</button>
-        </div>
+  head += '</div>';
+  let html = head;
+  state.habits.forEach(h => {
+    html += `<div class="habit">
+      <div style="flex:1; min-width:150px;">
+        <b>${h.name}</b>
+        <button class="ghost" style="padding:2px 6px; font-size:10px; margin-left:8px;" onclick="deleteHabit('${h.id}')">🗑</button>
       </div>
-    `;
-  }).join('') : '<p style="color:var(--muted)">Нет целей</p>';
+      <div class="habit-dots">`;
+    days.forEach(d => {
+      const done = h.log[d];
+      const short = d.slice(8);
+      html += `<div class="habit-dot ${done?'done':''}" onclick="toggleHabit('${h.id}','${d}')" title="${d}">${short}</div>`;
+    });
+    html += `</div></div>`;
+  });
+  $('habits-list').innerHTML = html || '<p style="color:var(--muted)">Добавь первую привычку</p>';
 }
 
-// ========== ЭНЕРГИЯ ==========
 function setEnergy(date, level) {
   state.energy[date] = level;
   DB.save(state);
   renderEnergy();
 }
+
 function renderEnergy() {
   const days = [];
   for (let i=29; i>=0; i--) {
@@ -1262,7 +1264,6 @@ function renderEnergy() {
   });
   $('energy-grid').innerHTML = html;
 
-  // Статистика
   const levels = Object.values(state.energy);
   const avg = levels.length ? (levels.reduce((s,l)=>s+l,0) / levels.length).toFixed(1) : 0;
   const high = levels.filter(l => l === 3).length;
@@ -1275,13 +1276,119 @@ function renderEnergy() {
     </div>
   `;
 }
+
 function cycleEnergy(date) {
   const current = state.energy[date] || 0;
   const next = (current % 3) + 1;
   setEnergy(date, next);
 }
 
-// ========== ФИНАНСЫ ==========
+function addNote() {
+  const title = $('n-title').value.trim();
+  const body = $('n-body').value.trim();
+  if (!title && !body) return;
+  state.notes.unshift({
+    id: uid(), title, body, tag: $('n-tag').value,
+    created: new Date().toISOString()
+  });
+  $('n-title').value = ''; $('n-body').value = '';
+  DB.save(state);
+  renderNotes();
+}
+
+function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  DB.save(state);
+  renderNotes();
+}
+
+function renderNotes() {
+  const tagNames = {idea:'💡 Идея', work:'💼 Работа', study:'📚 Учёба', personal:'🏠 Личное'};
+  $('notes-list').innerHTML = state.notes.length ? state.notes.map(n => `
+    <div class="note">
+      <div class="note-title">${n.title||'(без заголовка)'} ${n.tag?`<span class="chip">${tagNames[n.tag]||n.tag}</span>`:''}</div>
+      <div class="note-body">${n.body||''}</div>
+      <div class="note-meta">${new Date(n.created).toLocaleString('ru-RU')} 
+        <button class="ghost" style="padding:2px 8px; font-size:11px; margin-left:8px;" onclick="deleteNote('${n.id}')">🗑</button>
+      </div>
+    </div>
+  `).join('') : '<p style="color:var(--muted)">Нет заметок</p>';
+}
+
+function addRoutine() {
+  const name = $('rb-name').value.trim();
+  const time = $('rb-time').value;
+  const dur = parseInt($('rb-dur').value);
+  const slot = $('rb-slot').value;
+  if (!name || !time || !dur) return;
+  state.routine.push({id: uid(), name, time, dur, slot});
+  $('rb-name').value=''; $('rb-time').value=''; $('rb-dur').value='';
+  DB.save(state);
+  renderRoutine();
+}
+
+function deleteRoutine(id) {
+  state.routine = state.routine.filter(r => r.id !== id);
+  DB.save(state);
+  renderRoutine();
+}
+
+function renderRoutine() {
+  ['morning','day','evening','night'].forEach(slot => {
+    const items = state.routine.filter(r => r.slot === slot).sort((a,b)=>a.time.localeCompare(b.time));
+    const id = slot === 'morning' ? 'r-morning' : slot === 'day' ? 'r-day' : slot === 'evening' ? 'r-evening' : 'r-night';
+    $(id).innerHTML = items.length ? items.map(r => `
+      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+        <span><b>${r.time}</b> ${r.name} <small style="color:var(--muted)">(${r.dur} мин)</small></span>
+        <button class="ghost" style="padding:2px 6px; font-size:10px;" onclick="deleteRoutine('${r.id}')">🗑</button>
+      </div>
+    `).join('') : '<small style="color:var(--muted)">Пусто</small>';
+  });
+}
+
+function addGoal() {
+  const title = $('g-title').value.trim();
+  const target = parseFloat($('g-target').value);
+  const deadline = $('g-deadline').value;
+  if (!title || !target || !deadline) { alert('Заполни все поля'); return; }
+  state.goals.push({id: uid(), title, target, current: 0, deadline, created: today()});
+  $('g-title').value = ''; $('g-target').value = ''; $('g-deadline').value = '';
+  DB.save(state);
+  renderGoals();
+}
+
+function updateGoal(id, delta) {
+  const g = state.goals.find(x => x.id === id);
+  g.current = Math.max(0, Math.min(g.target, g.current + delta));
+  DB.save(state);
+  renderGoals();
+}
+
+function deleteGoal(id) {
+  state.goals = state.goals.filter(g => g.id !== id);
+  DB.save(state);
+  renderGoals();
+}
+
+function renderGoals() {
+  $('goals-list').innerHTML = state.goals.length ? state.goals.map(g => {
+    const pct = Math.round((g.current / g.target) * 100);
+    const daysLeft = daysBetween(today(), g.deadline);
+    return `
+      <div class="goal-card">
+        <div class="goal-title">${g.title}</div>
+        <div class="goal-meta">${g.current} / ${g.target} • Осталось ${daysLeft} дн.</div>
+        <div class="progress-bar"><div style="width:${pct}%"></div></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="ghost" onclick="updateGoal('${g.id}', -1)">-1</button>
+          <button class="ghost" onclick="updateGoal('${g.id}', 1)">+1</button>
+          <button class="danger" onclick="deleteGoal('${g.id}')">🗑</button>
+        </div>
+      </div>
+    `;
+  }).join('') : '<p style="color:var(--muted)">Нет целей</p>';
+}
+
 function addFinance(type) {
   const prefix = type === 'income' ? 'in' : 'ex';
   const title = $(`fin-${prefix}-title`).value.trim();
@@ -1293,11 +1400,13 @@ function addFinance(type) {
   DB.save(state);
   renderFinance();
 }
+
 function deleteFinance(id) {
   state.finance = state.finance.filter(f => f.id !== id);
   DB.save(state);
   renderFinance();
 }
+
 function renderFinance() {
   const inc = state.finance.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0);
   const exp = state.finance.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0);
@@ -1314,19 +1423,17 @@ function renderFinance() {
       <div><b>${f.title}</b><br><small style="color:var(--muted)">${f.date}</small></div>
       <div>
         <b>${f.type==='income'?'+':'-'}${f.amount.toLocaleString()} ₽</b>
-        <button class="ghost" style="padding:4px 8px; font-size:11px; margin-left:6px;" onclick="deleteFinance('${f.id}')">🗑</button>
+        <button class="ghost" style="padding:4px 8px; font-size:11px; margin-left:8px;" onclick="deleteFinance('${f.id}')">🗑</button>
       </div>
     </div>
   `).join('') || '<p style="color:var(--muted)">Нет записей</p>';
 }
 
-// ========== СТАТИСТИКА ==========
 function renderStats() {
   const total = state.tasks.length;
   const done = state.tasks.filter(t => t.done).length;
   const rate = total ? Math.round((done / total) * 100) : 0;
   
-  // Streak
   let streak = 0;
   const todayDate = new Date();
   for (let i=0; i<365; i++) {
@@ -1343,15 +1450,14 @@ function renderStats() {
   $('stat-rate').textContent = rate + '%';
   $('stat-streak').textContent = streak;
 
-  // По проектам
   let projHTML = '';
   state.projects.forEach(p => {
     const tasks = state.tasks.filter(t => t.projectId === p.id);
     const done = tasks.filter(t => t.done).length;
     const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
     projHTML += `
-      <div style="margin-bottom:10px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+      <div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
           <span>${p.emoji} ${p.name}</span>
           <span style="color:var(--muted)">${done}/${tasks.length} (${pct}%)</span>
         </div>
@@ -1360,31 +1466,50 @@ function renderStats() {
     `;
   });
   $('stats-projects').innerHTML = projHTML || '<p style="color:var(--muted)">Нет данных</p>';
-
-  // По дням недели
-  const weekdays = [0,0,0,0,0,0,0];
-  state.tasks.filter(t => t.done && t.doneAt).forEach(t => {
-    const d = parseDate(t.doneAt);
-    const day = (d.getDay() + 6) % 7; // Пн=0
-    weekdays[day]++;
-  });
-  const maxDay = Math.max(...weekdays);
-  let weekHTML = '<div style="display:flex; gap:4px; align-items:end; height:100px;">';
-  weekdays.forEach((count, i) => {
-    const height = maxDay ? (count / maxDay * 100) : 0;
-    weekHTML += `
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
-        <div style="width:100%; background:var(--accent); height:${height}%; border-radius:4px 4px 0 0;"></div>
-        <div style="font-size:11px; color:var(--muted); margin-top:4px;">${WEEKDAYS[i]}</div>
-        <div style="font-size:10px; color:var(--muted);">${count}</div>
-      </div>
-    `;
-  });
-  weekHTML += '</div>';
-  $('stats-weekdays').innerHTML = weekHTML;
 }
 
-// ========== TELEGRAM ==========
+async function syncToServer() {
+  try {
+    await fetch(SERVER_URL + '/api/data', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(state)
+    });
+    updateSyncStatus(true);
+  } catch(e) {
+    updateSyncStatus(false);
+  }
+}
+
+async function syncFromServer() {
+  try {
+    const r = await fetch(SERVER_URL + '/api/data');
+    if (r.ok) {
+      const remote = await r.json();
+      if (remote.tasks) {
+        state.tasks = remote.tasks;
+        if (remote.settings) state.settings = {...state.settings, ...remote.settings};
+        DB.save(state);
+        renderAll();
+      }
+      updateSyncStatus(true);
+    }
+  } catch(e) {
+    updateSyncStatus(false);
+  }
+}
+
+function updateSyncStatus(online) {
+  const el = $('sync-status');
+  if (online) {
+    el.className = 'sync-status online';
+    el.textContent = '✅ Подключён';
+  } else {
+    el.className = 'sync-status offline';
+    el.textContent = '⚠️ Оффлайн';
+  }
+}
+
 async function sendTG(text) {
   const {tgToken, tgChat} = state.settings;
   if (!tgToken || !tgChat) return false;
@@ -1401,161 +1526,35 @@ async function sendTG(text) {
     return false;
   }
 }
+
 function saveTG() {
   state.settings.tgToken = $('s-tg-token').value.trim();
   state.settings.tgChat = $('s-tg-chat').value.trim();
   DB.save(state);
+  syncToServer();
   $('tg-status').innerHTML = '<div class="alert ok">✅ Сохранено</div>';
 }
+
 async function testTG() { await sendTG('🌿 Тест от планировщика'); }
-function requestNotif() {
-  if (!('Notification' in window)) { alert('Не поддерживается'); return; }
-  Notification.requestPermission().then(p => {
-    $('tg-status').innerHTML = p === 'granted' ? '<div class="alert ok">✅ Разрешены</div>' : '<div class="alert warn">⚠️ Отклонено</div>';
-  });
-}
-function notify(title, body) {
-  if (Notification.permission === 'granted') new Notification(title, {body});
-}
 
-async function sendTodayToTG() {
-  const td = today();
-  const tasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
-  if (!tasks.length) {
-    alert('На сегодня нет задач');
-    return;
-  }
-  const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
-  let msg = `🌿 Задачи на сегодня (${td}):\n\n`;
-  tasks.forEach(t => msg += `• ${t.title} — ${t.hours}ч\n`);
-  msg += `\nВсего: ${h}ч`;
-  await sendTG(msg);
-  alert('✅ Отправлено в Telegram');
-}
-
-// ========== НАСТРОЙКИ ==========
 function loadSettings() {
   const s = state.settings;
-  $('s-wake').value = s.wake;
-  $('s-sleep').value = s.sleep;
-  $('s-study').value = s.study;
-  $('s-work').value = s.work;
-  $('s-max').value = s.max;
-  $('s-remind').value = s.remind;
-  $('s-tg-token').value = s.tgToken;
-  $('s-tg-chat').value = s.tgChat;
+  $('s-workstart').value = s.workStart || '08:00';
+  $('s-workend').value = s.workEnd || '22:00';
+  $('s-max').value = s.max || 6;
+  $('s-tg-token').value = s.tgToken || '';
+  $('s-tg-chat').value = s.tgChat || '';
 }
+
 function saveSettings() {
-  state.settings.wake = $('s-wake').value;
-  state.settings.sleep = $('s-sleep').value;
-  state.settings.study = parseFloat($('s-study').value)||0;
-  state.settings.work = parseFloat($('s-work').value)||0;
-  state.settings.max = parseFloat($('s-max').value)||6;
-  state.settings.remind = parseInt($('s-remind').value)||30;
+  state.settings.workStart = $('s-workstart').value;
+  state.settings.workEnd = $('s-workend').value;
+  state.settings.max = parseFloat($('s-max').value) || 6;
   DB.save(state);
-  scheduleTasks();
-  renderAll();
+  syncToServer();
   alert('✅ Сохранено');
 }
 
-// ========== ЭКСПОРТ/ИМПОРТ ==========
-function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `planner-${today()}.json`;
-  a.click();
-}
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const r = new FileReader();
-  r.onload = ev => {
-    try { state = JSON.parse(ev.target.result); DB.save(state); renderAll(); alert('✅'); }
-    catch { alert('❌'); }
-  };
-  r.readAsText(file);
-}
-function resetAll() {
-  if (!confirm('Удалить ВСЁ?')) return;
-  localStorage.removeItem('planner_v4');
-  location.reload();
-}
-
-// ========== СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ==========
-async function syncToServer() {
-  try {
-    await fetch(SERVER_URL + '/api/data', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(state)
-    });
-    updateSyncStatus(true);
-  } catch(e) {
-    console.log('⚠️ Сервер недоступен:', e.message);
-    updateSyncStatus(false);
-  }
-}
-
-async function syncFromServer() {
-  try {
-    const r = await fetch(SERVER_URL + '/api/data');
-    if (r.ok) {
-      const remote = await r.json();
-      if (remote.tasks && remote.tasks.length > 0) {
-        state = {...state, ...remote};
-        DB.save(state);
-        renderAll();
-        console.log('✅ Загружено с сервера');
-      }
-      updateSyncStatus(true);
-    }
-  } catch(e) {
-    console.log('⚠️ Нет данных на сервере');
-    updateSyncStatus(false);
-  }
-}
-
-function updateSyncStatus(online) {
-  const el = $('sync-status');
-  if (online) {
-    el.className = 'sync-status online';
-    el.textContent = '✅ Сервер подключён';
-  } else {
-    el.className = 'sync-status offline';
-    el.textContent = '⚠️ Сервер недоступен (работает локально)';
-  }
-}
-
-// Переопределяем DB.save для автосинхронизации
-const _origSave = DB.save;
-DB.save = function(d) { 
-  _origSave(d); 
-  syncToServer(); 
-};
-
-// ========== ФОНОВЫЕ ПРОВЕРКИ ==========
-async function checkReminders() {
-  const td = today();
-  const now = new Date();
-  const hm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  if (hm === '08:00' && !sessionStorage.getItem('br_'+td)) {
-    sessionStorage.setItem('br_'+td, '1');
-    const tasks = state.tasks.filter(t => !t.done && t.scheduledDate === td);
-    const h = tasks.reduce((s,t)=>s+Number(t.hours||0),0);
-    let msg = `🌿 Доброе утро!\n\nСегодня: ${tasks.length} задач • ${h}ч\n\n`;
-    tasks.forEach(t => msg += `• ${t.title} — ${t.hours}ч\n`);
-    await sendTG(msg);
-    notify('Доброе утро 🌿', `Сегодня ${tasks.length} задач`);
-  }
-  if (hm === '21:00' && !sessionStorage.getItem('ev_'+td)) {
-    sessionStorage.setItem('ev_'+td, '1');
-    const done = state.tasks.filter(t => t.done && t.doneAt === td).length;
-    await sendTG(`🌙 Итоги дня\n\n✅ Выполнено: ${done}`);
-  }
-}
-
-// ========== РЕНДЕР ==========
 function renderAll() {
   renderBanner();
   renderTasks();
@@ -1573,12 +1572,12 @@ function renderAll() {
   sel.innerHTML = state.projects.map(p => `<option value="${p.id}">${p.emoji} ${p.name}</option>`).join('');
 }
 
-// ========== СТАРТ ==========
-scheduleTasks();
 renderAll();
-setInterval(checkReminders, 30000);
-checkReminders();
 syncFromServer();
+const _origSave = DB.save;
+DB.save = function(d) { _origSave(d); syncToServer(); };
 </script>
 </body>
 </html>
+</content>
+</writeFile>
