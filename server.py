@@ -1,7 +1,9 @@
 """
-Python-сервер для 24/7 уведомлений + почасовое распределение задач.
-Railway-совместимая версия с Telegram-ботом.
+Polina Smart Planner - Server
+Python-сервер для 24/7 уведомлений + почасовое распределение + сдвиг расписания
+Railway-совместимая версия
 """
+
 import json
 import os
 import re
@@ -15,6 +17,7 @@ DATA_FILE = 'planner_data.json'
 TG_TOKEN = os.getenv('TG_TOKEN', '')
 TG_CHAT = os.getenv('TG_CHAT', '')
 
+
 # ========== CORS ==========
 @app.after_request
 def add_cors_headers(response):
@@ -23,9 +26,11 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 
+
 @app.route('/api/data', methods=['OPTIONS'])
 def options_data():
     return '', 204
+
 
 # ========== ДАННЫЕ ==========
 def load_data():
@@ -47,6 +52,7 @@ def load_data():
         print(f'Ошибка загрузки: {e}')
         return {'tasks': [], 'settings': {'tgToken': TG_TOKEN, 'tgChat': TG_CHAT}}
 
+
 def save_data(d):
     try:
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
@@ -54,10 +60,10 @@ def save_data(d):
     except Exception as e:
         print(f'Ошибка сохранения: {e}')
 
+
 # ========== TELEGRAM ==========
 def send_tg(text, chat_id=None):
     if not TG_TOKEN:
-        print('TG_TOKEN не настроен')
         return False
     target_chat = chat_id or TG_CHAT
     try:
@@ -72,9 +78,10 @@ def send_tg(text, chat_id=None):
         print(f'TG ошибка: {e}')
         return False
 
+
 # ========== ПОЧАСОВОЕ РАСПИСАНИЕ ==========
-def schedule_hourly(data, skip_breakfast=False):
-    """Распределяет задачи по часам с учётом приёмов пищи"""
+def schedule_hourly(data, skip_breakfast=False, shift_time=None):
+    """Распределяет задачи по часам с учётом приёмов пищи и сдвига"""
     today = datetime.now().strftime('%Y-%m-%d')
     work_start = data.get('settings', {}).get('workStart', '08:00')
     
@@ -83,7 +90,13 @@ def schedule_hourly(data, skip_breakfast=False):
         hour=start_hour, minute=start_min, second=0, microsecond=0
     )
     
-    # Если сейчас позже времени начала — начинаем с текущего времени
+    # Если есть сдвиг по времени
+    if shift_time:
+        shift_h, shift_m = map(int, shift_time.split(':'))
+        shift_datetime = current_time.replace(hour=shift_h, minute=shift_m)
+        if current_time < shift_datetime:
+            current_time = shift_datetime
+    
     if datetime.now() > current_time:
         current_time = datetime.now().replace(second=0, microsecond=0)
         if current_time.minute < 30:
@@ -91,18 +104,15 @@ def schedule_hourly(data, skip_breakfast=False):
         else:
             current_time = current_time.replace(minute=30)
     
-    # Время приёмов пищи
     meals = {
         'breakfast': {'time': '08:30', 'duration': 30, 'skip': skip_breakfast},
         'lunch': {'time': '13:00', 'duration': 60, 'skip': False},
         'dinner': {'time': '19:00', 'duration': 45, 'skip': False}
     }
     
-    # Задачи на сегодня
     tasks_today = [t for t in data.get('tasks', []) 
                    if not t.get('done') and t.get('scheduledDate') == today]
     
-    # Сортируем по приоритету
     priority_order = {'high': 0, 'mid': 1, 'low': 2}
     tasks_today.sort(key=lambda t: priority_order.get(t.get('priority', 'mid'), 1))
     
@@ -110,7 +120,6 @@ def schedule_hourly(data, skip_breakfast=False):
     task_index = 0
     
     while task_index < len(tasks_today) and current_time.hour < 22:
-        # Проверяем приём пищи
         meal_time = None
         for meal_name, meal_info in meals.items():
             if meal_info['skip']:
@@ -154,6 +163,7 @@ def schedule_hourly(data, skip_breakfast=False):
     
     return schedule
 
+
 def format_schedule(schedule):
     """Форматирует расписание для Telegram"""
     if not schedule:
@@ -168,6 +178,47 @@ def format_schedule(schedule):
             msg += f"{item['start']} 📌 {item['name']} ({hours}ч)\n"
     
     return msg
+
+
+# ========== СДВИГ РАСПИСАНИЯ ==========
+def shift_schedule(data, shift_type, shift_value=None):
+    """
+    Сдвигает расписание
+    shift_type: 'time' (до времени) или 'next_day' (на следующий день)
+    shift_value: время в формате 'HH:MM' (для shift_type='time')
+    """
+    today = datetime.now().strftime('%Y-%m-%d')
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    tasks_today = [t for t in data.get('tasks', []) 
+                   if not t.get('done') and t.get('scheduledDate') == today]
+    
+    if shift_type == 'next_day':
+        # Переносим все задачи на завтра
+        for task in tasks_today:
+            task['scheduledDate'] = tomorrow
+            task['startTime'] = task.get('startTime', '09:00')
+        
+        save_data(data)
+        return f"✅ Все задачи перенесены на завтра ({tomorrow})"
+    
+    elif shift_type == 'time' and shift_value:
+        # Сдвигаем задачи после указанного времени
+        shift_h, shift_m = map(int, shift_value.split(':'))
+        shift_time_str = f"{shift_h:02d}:{shift_m:02d}"
+        
+        shifted_count = 0
+        for task in tasks_today:
+            task_start = task.get('startTime', '09:00')
+            if task_start >= shift_time_str:
+                task['scheduledDate'] = tomorrow
+                shifted_count += 1
+        
+        save_data(data)
+        return f"✅ {shifted_count} задач перенесено на завтра (после {shift_value})"
+    
+    return "❌ Неверный тип сдвига"
+
 
 # ========== АВТОМАТИЧЕСКИЕ НАПОМИНАНИЯ ==========
 def morning_briefing():
@@ -185,6 +236,7 @@ def morning_briefing():
     except Exception as e:
         print(f'Ошибка: {e}')
 
+
 def evening_report():
     try:
         data = load_data()
@@ -194,6 +246,7 @@ def evening_report():
         send_tg(f"🌙 Итоги дня\n\n✅ Выполнено: {len(done)} задач")
     except Exception as e:
         print(f'Ошибка: {e}')
+
 
 def deadline_check():
     try:
@@ -210,6 +263,8 @@ def deadline_check():
     except Exception as e:
         print(f'Ошибка: {e}')
 
+
+# Инициализация планировщика
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
     scheduler = BackgroundScheduler()
@@ -220,6 +275,7 @@ try:
     print('✅ Планировщик запущен')
 except Exception as e:
     print(f'Ошибка планировщика: {e}')
+
 
 # ========== КОМАНДЫ БОТА ==========
 def handle_command(text, chat_id):
@@ -232,7 +288,9 @@ def handle_command(text, chat_id):
             "/встала — начать день (с завтраком)\n"
             "/без_завтрака — начать день (без завтрака)\n"
             "/расписание — показать расписание\n"
-            "/задачи — список задач на сегодня\n\n"
+            "/задачи — список задач на сегодня\n"
+            "/сдвинуть_на_завтра — перенести все задачи\n"
+            "/сдвинуть_после_18 — перенести задачи после 18:00\n\n"
             "Или просто напиши задачу:\n"
             "Сделать демо 3 часа до 25.06",
             chat_id
@@ -274,7 +332,25 @@ def handle_command(text, chat_id):
             send_tg('🌿 На сегодня задач нет', chat_id)
         return True
     
+    if text_lower in ['/сдвинуть_на_завтра', 'сдвинуть на завтра']:
+        data = load_data()
+        result = shift_schedule(data, 'next_day')
+        send_tg(result, chat_id)
+        return True
+    
+    # Парсим "/сдвинуть_после_18" или "/сдвинуть_после_18:30"
+    shift_match = re.match(r'/сдвинуть_после_(\d{1,2})(?::(\d{2}))?', text_lower)
+    if shift_match:
+        hour = int(shift_match.group(1))
+        minute = int(shift_match.group(2)) if shift_match.group(2) else 0
+        shift_time = f"{hour:02d}:{minute:02d}"
+        data = load_data()
+        result = shift_schedule(data, 'time', shift_time)
+        send_tg(result, chat_id)
+        return True
+    
     return False
+
 
 # ========== СОЗДАНИЕ ЗАДАЧИ ИЗ СООБЩЕНИЯ ==========
 def handle_new_task(text, chat_id):
@@ -321,6 +397,7 @@ def handle_new_task(text, chat_id):
     msg = f'✅ Задача создана!\n\n📌 {title}\n⏱ {hours} часа\n📅 Сдать: {deadline}'
     send_tg(msg, chat_id)
 
+
 # ========== WEBHOOK TELEGRAM ==========
 @app.route(f'/webhook/{TG_TOKEN}', methods=['POST'])
 def webhook():
@@ -340,19 +417,23 @@ def webhook():
         print(f'Webhook ошибка: {e}')
         return jsonify({'ok': False}), 500
 
+
 # ========== РАЗДАЧА СТАТИКИ ==========
 @app.route('/')
 def serve_index():
     return send_from_directory('.', 'index.html')
 
+
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('.', path)
+
 
 # ========== API ==========
 @app.route('/api/data', methods=['GET'])
 def get_data():
     return jsonify(load_data())
+
 
 @app.route('/api/data', methods=['POST'])
 def post_data():
@@ -362,19 +443,35 @@ def post_data():
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)}), 500
 
+
 @app.route('/api/schedule', methods=['GET'])
 def get_schedule():
-    """Возвращает расписание на сегодня"""
     data = load_data()
     skip_breakfast = request.args.get('skip_breakfast', 'false').lower() == 'true'
-    schedule = schedule_hourly(data, skip_breakfast)
+    shift_time = request.args.get('shift_time', None)
+    schedule = schedule_hourly(data, skip_breakfast, shift_time)
     return jsonify({'schedule': schedule})
+
+
+@app.route('/api/shift', methods=['POST'])
+def shift_tasks():
+    """API для сдвига расписания"""
+    data = request.json
+    shift_type = data.get('shift_type', '')
+    shift_value = data.get('shift_value', None)
+    
+    data_obj = load_data()
+    result = shift_schedule(data_obj, shift_type, shift_value)
+    
+    return jsonify({'ok': True, 'message': result})
+
 
 @app.route('/api/send', methods=['POST'])
 def manual_send():
     text = request.json.get('text', '')
     ok = send_tg(text)
     return jsonify({'ok': ok})
+
 
 # ========== ЗАПУСК ==========
 if __name__ == '__main__':
